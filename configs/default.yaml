@@ -1,0 +1,19 @@
+budgets:
+  - 500
+  - 1000
+  - 2000
+  - 4000
+  - 8000
+
+resource_types:
+  - knowledge
+  - experience
+  - computation
+
+primary_metrics:
+  - task_accuracy
+  - token_cost
+  - latency
+  - state_coverage
+  - state_precision
+  - compression_ratio

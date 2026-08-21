@@ -1,15 +1,68 @@
-TITLE
-Cognitive State Compilation: Resource-Bounded Construction of
-Reasoning States for Long-Horizon LLM Agents
+# Cognitive State Compilation (CSC)
 
-ABSTRACT
-## Abstract
+Resource-Bounded Construction of Reasoning States for Long-Horizon LLM Agents.
 
-Long-horizon LLM agents increasingly rely on retrieval, persistent memory, and external tools to maintain information across extended interactions. However, existing approaches largely treat memory retrieval, experience reuse, and computational artifacts as separate mechanisms, often constructing the model's context through relevance-based retrieval or memory-specific policies. This can lead to redundant computation, excessive context consumption, and inefficient use of heterogeneous information.
+This repository implements a minimal research prototype of:
 
-We introduce **Cognitive State Compilation (CSC)**, a task-conditioned framework for constructing resource-bounded reasoning states for long-horizon LLM agents. CSC treats previously available knowledge, episodic experiences, and reusable computational artifacts as heterogeneous cognitive resources and learns to select, transform, and compose them into a task-specific state presented to the reasoning model. Rather than maximizing the amount of retrieved context, CSC formulates state construction as a constrained optimization problem that seeks to preserve task-relevant information while respecting a specified resource budget.
+Task -> Task Encoder -> Candidate Resource Pool -> Utility Scorer
+-> Budgeted Selector -> State Composer -> Compiled Cognitive State -> LLM
 
-We propose an experimental framework comparing CSC with conventional retrieval, memory-augmented retrieval, and relevance-based state selection under controlled context and computation budgets. We evaluate task performance, context consumption, inference cost, retrieval overhead, and robustness to irrelevant or conflicting memory. Our central hypothesis is that explicit cognitive state compilation can improve **performance per unit of computational resource** by reducing unnecessary information and redundant reasoning while retaining information critical to long-horizon task completion.
+Resource types:
+- knowledge
+- experience
+- computation
 
-This work presents cognitive state construction as a distinct research problem at the intersection of agent memory, retrieval-augmented generation, and resource-aware inference, providing a foundation for more efficient long-horizon autonomous agents.
+## Install
 
+```bash
+python -m venv .venv
+# Windows: .venv\\Scripts\\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Offline demo
+
+```bash
+python scripts/run_demo.py
+```
+
+The demo uses TF-IDF and a deterministic state evaluator, so no API key is
+required. It is an architecture smoke test, NOT a publication-quality LLM
+benchmark.
+
+Results are written to `results/demo_results.csv` and
+`results/demo_summary.csv`.
+
+## Tests
+
+```bash
+pytest -q
+```
+
+## Real LLM mode
+
+Set:
+- `LLM_API_KEY`
+- `LLM_BASE_URL`
+- `LLM_MODEL`
+
+The provided OpenAI-compatible adapter can then be connected to the experiment
+runner.
+
+## Important research note
+
+The included B5 baseline is a controlled approximation of MEM1-style recurrent
+compact-state consolidation. It is NOT a reproduction of MEM1's original RL
+training procedure. For the final paper, label it accordingly unless you
+implement the original method faithfully.
+
+## Next research stages
+
+1. Replace TF-IDF with a learned utility scorer.
+2. Use a real long-horizon benchmark.
+3. Use the exact target-model tokenizer.
+4. Add real LLM evaluation.
+5. Add noise/conflict/stale-memory robustness.
+6. Add computational-memory traces.
+7. Run the full budget sweep: 500/1000/2000/4000/8000 tokens.
