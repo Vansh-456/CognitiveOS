@@ -1,0 +1,302 @@
+[
+  {
+    "task_id": "ws_101",
+    "query": "WebShop Shopping Goal: i need a black wireless bluetooth mouse under $30 with rechargeable battery and silent click",
+    "answer": "Logitech M330 Silent Plus Wireless Mouse - Rechargeable, Black, Silent Switch, 2.4GHz",
+    "required_facts": [
+      "Logitech M330 Silent Plus Wireless Mouse - Rechargeable, Black, Silent Switch, 2.4GHz",
+      "$24.99"
+    ],
+    "resources": [
+      {
+        "resource_id": "ws_k_target_0",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Logitech M330 Silent Plus Wireless Mouse - Rechargeable, Black, Silent Switch, 2.4GHz | Price: $24.99 | Features: color: black, connectivity: bluetooth/wireless, battery: rechargeable, noise: silent click.",
+        "token_cost": 57,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "ws_k_dist_0_0",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Razer DeathAdder Gaming Mouse - Wired, RGB Lighting, Black, 6400 DPI, $45.00",
+        "token_cost": 24,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_0_1",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Apple Magic Mouse - Wireless Bluetooth, Multi-Touch Surface, White, $79.00",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_0_2",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Anker Ergonomic Optical USB Mouse - Wired, Vertical Design, Black, $19.99",
+        "token_cost": 19,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_0_3",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: HP Wireless Mouse X3000 - Red, AA Battery Powered, 1600 DPI, $14.50",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_e_history_0",
+        "resource_type": "experience",
+        "text": "Prior Shopping Navigation Experience: Searched 'wireless mouse -> bluetooth mouse silent -> rechargeable silent mouse'. Filtered out non-matching brands and over-budget products.",
+        "token_cost": 34,
+        "utility_hint": 0.6
+      },
+      {
+        "resource_id": "ws_c_filter_0",
+        "resource_type": "computation",
+        "text": "E-Commerce Tool Trace: Filter [Price <= $30.00, Color == Black, Feature == Silent]: 2 matching items found. Verified in-stock and seller rating >= 4.5.",
+        "token_cost": 41,
+        "utility_hint": 0.9
+      }
+    ]
+  },
+  {
+    "task_id": "ws_102",
+    "query": "WebShop Shopping Goal: looking for men's size 10 lightweight running shoes in navy blue under $65 with cushioned sole",
+    "answer": "Brooks Ghost 14 Men's Road Running Shoes - Size 10 M, Navy/Blue/White, DNA LOFT Cushioning",
+    "required_facts": [
+      "Brooks Ghost 14 Men's Road Running Shoes - Size 10 M, Navy/Blue/White, DNA LOFT Cushioning",
+      "$59.95"
+    ],
+    "resources": [
+      {
+        "resource_id": "ws_k_target_1",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Brooks Ghost 14 Men's Road Running Shoes - Size 10 M, Navy/Blue/White, DNA LOFT Cushioning | Price: $59.95 | Features: size: 10, gender: men, color: navy blue, feature: cushioned sole, price: under $65.",
+        "token_cost": 66,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "ws_k_dist_1_0",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Nike Air Max 270 - Men's Running Sneaker, Size 11, Triple Black, $120.00",
+        "token_cost": 23,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_1_1",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Adidas Cloudfoam Pure - Women's Sneaker, Size 8, Grey/Pink, $49.99",
+        "token_cost": 24,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_1_2",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Under Armour Charged Assert 9 - Men's Trail Shoe, Size 10, Bright Orange, $75.00",
+        "token_cost": 24,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_1_3",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Puma Tazon 6 Cross-Trainer - Men's Shoe, Size 9.5, Black/Silver, $55.00",
+        "token_cost": 28,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_e_history_1",
+        "resource_type": "experience",
+        "text": "Prior Shopping Navigation Experience: Searched 'mens running shoes size 10 -> navy blue running shoe cushioned -> lightweight road running shoes'. Filtered out non-matching brands and over-budget products.",
+        "token_cost": 40,
+        "utility_hint": 0.6
+      },
+      {
+        "resource_id": "ws_c_filter_1",
+        "resource_type": "computation",
+        "text": "E-Commerce Tool Trace: Filter [Category == Running Shoes, Size == 10, Color == Navy, Price <= $65]: 1 target item identified. Verified in-stock and seller rating >= 4.5.",
+        "token_cost": 45,
+        "utility_hint": 0.9
+      }
+    ]
+  },
+  {
+    "task_id": "ws_103",
+    "query": "WebShop Shopping Goal: find a 32oz insulated stainless steel water bottle with straw lid in olive green under $35",
+    "answer": "Hydro Flask Wide Mouth 32 oz with Flex Straw Cap - Stainless Steel Vacuum Insulated, Olive Green",
+    "required_facts": [
+      "Hydro Flask Wide Mouth 32 oz with Flex Straw Cap - Stainless Steel Vacuum Insulated, Olive Green",
+      "$29.95"
+    ],
+    "resources": [
+      {
+        "resource_id": "ws_k_target_2",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Hydro Flask Wide Mouth 32 oz with Flex Straw Cap - Stainless Steel Vacuum Insulated, Olive Green | Price: $29.95 | Features: capacity: 32oz, material: stainless steel, lid: straw lid, color: olive green.",
+        "token_cost": 54,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "ws_k_dist_2_0",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Yeti Rambler 26 oz Bottle - Stainless Steel, Chug Cap, Navy Blue, $40.00",
+        "token_cost": 24,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_2_1",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Nalgene Sustain BPA-Free Plastic Water Bottle - 32 oz, Wide Mouth, Clear Blue, $14.99",
+        "token_cost": 26,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_2_2",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: CamelBak Eddy+ 20oz Water Bottle - Insulated Stainless Steel, Oxford Blue, $26.00",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_2_3",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Stanley IceFlow Stainless Steel Tumbler - 30 oz, Rose Quartz, $35.00",
+        "token_cost": 21,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_e_history_2",
+        "resource_type": "experience",
+        "text": "Prior Shopping Navigation Experience: Searched 'insulated water bottle 32oz -> stainless steel water bottle with straw -> hydro flask olive green 32 oz'. Filtered out non-matching brands and over-budget products.",
+        "token_cost": 44,
+        "utility_hint": 0.6
+      },
+      {
+        "resource_id": "ws_c_filter_2",
+        "resource_type": "computation",
+        "text": "E-Commerce Tool Trace: Filter [Capacity == 32oz, Lid == Straw, Color == Olive Green, Price <= $35]: 1 exact match. Verified in-stock and seller rating >= 4.5.",
+        "token_cost": 45,
+        "utility_hint": 0.9
+      }
+    ]
+  },
+  {
+    "task_id": "ws_104",
+    "query": "WebShop Shopping Goal: find a 4K 27-inch IPS computer monitor with USB-C power delivery and 60Hz refresh rate under $300",
+    "answer": "Dell S2722QC 27-inch 4K UHD Monitor - IPS Panel, USB-C 65W Power Delivery, 60Hz, FreeSync",
+    "required_facts": [
+      "Dell S2722QC 27-inch 4K UHD Monitor - IPS Panel, USB-C 65W Power Delivery, 60Hz, FreeSync",
+      "$279.99"
+    ],
+    "resources": [
+      {
+        "resource_id": "ws_k_target_3",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Dell S2722QC 27-inch 4K UHD Monitor - IPS Panel, USB-C 65W Power Delivery, 60Hz, FreeSync | Price: $279.99 | Features: resolution: 4K UHD, size: 27-inch, panel: IPS, connectivity: USB-C PD 65W.",
+        "token_cost": 72,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "ws_k_dist_3_0",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: ASUS ROG Swift 27-inch 1440p Gaming Monitor - 240Hz, G-Sync, HDMI, $549.00",
+        "token_cost": 29,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_3_1",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: LG 24-inch 1080p UltraGear Monitor - 144Hz, IPS, DisplayPort, $159.99",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_3_2",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Samsung 32-inch Curved 4K Monitor - VA Panel, 60Hz, HDMI only, $319.99",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_3_3",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: ViewSonic 27-inch 1080p Enterprise Monitor - VGA/HDMI, $139.99",
+        "token_cost": 21,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_e_history_3",
+        "resource_type": "experience",
+        "text": "Prior Shopping Navigation Experience: Searched '27 inch 4k monitor -> usb-c 4k monitor ips 27 -> dell 4k monitor 60hz power delivery'. Filtered out non-matching brands and over-budget products.",
+        "token_cost": 49,
+        "utility_hint": 0.6
+      },
+      {
+        "resource_id": "ws_c_filter_3",
+        "resource_type": "computation",
+        "text": "E-Commerce Tool Trace: Filter [Size == 27in, Resolution == 4K, Panel == IPS, Port == USB-C PD, Price <= $300]: 1 match. Verified in-stock and seller rating >= 4.5.",
+        "token_cost": 51,
+        "utility_hint": 0.9
+      }
+    ]
+  },
+  {
+    "task_id": "ws_105",
+    "query": "WebShop Shopping Goal: i want a mechanical gaming keyboard with brown switches, tenkeyless (TKL) layout, and white backlighting under $70",
+    "answer": "Keychron C1 Mac/Windows Tenkeyless Mechanical Keyboard - Gateron Brown Switches, White LED Backlit, USB-C",
+    "required_facts": [
+      "Keychron C1 Mac/Windows Tenkeyless Mechanical Keyboard - Gateron Brown Switches, White LED Backlit, USB-C",
+      "$54.99"
+    ],
+    "resources": [
+      {
+        "resource_id": "ws_k_target_4",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Keychron C1 Mac/Windows Tenkeyless Mechanical Keyboard - Gateron Brown Switches, White LED Backlit, USB-C | Price: $54.99 | Features: switches: Gateron Brown, layout: Tenkeyless (TKL), backlight: White LED, price: under $70.",
+        "token_cost": 67,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "ws_k_dist_4_0",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Corsair K70 Full Size Gaming Keyboard - Cherry MX Red Switches, RGB Backlight, $129.99",
+        "token_cost": 23,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_4_1",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Logitech G213 Prodigy Membrane Keyboard - RGB, Dedicated Media Controls, $44.99",
+        "token_cost": 21,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_4_2",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Razer BlackWidow V3 Mini - 65% Wireless, Green Clicky Switches, RGB, $99.99",
+        "token_cost": 27,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_k_dist_4_3",
+        "resource_type": "knowledge",
+        "text": "Catalog Item: Redragon K552 60% Keyboard - Outemu Blue Loud Clicky Switches, Red LED, $32.99",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "ws_e_history_4",
+        "resource_type": "experience",
+        "text": "Prior Shopping Navigation Experience: Searched 'tkl mechanical keyboard -> brown switch mechanical keyboard white backlit -> keychron c1 brown'. Filtered out non-matching brands and over-budget products.",
+        "token_cost": 40,
+        "utility_hint": 0.6
+      },
+      {
+        "resource_id": "ws_c_filter_4",
+        "resource_type": "computation",
+        "text": "E-Commerce Tool Trace: Filter [Layout == TKL, Switch == Brown, Backlight == White LED, Price <= $70]: 1 target found. Verified in-stock and seller rating >= 4.5.",
+        "token_cost": 45,
+        "utility_hint": 0.9
+      }
+    ]
+  }
+]

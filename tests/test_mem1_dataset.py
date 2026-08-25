@@ -67,6 +67,14 @@ class TestMem1Dataset(unittest.TestCase):
             self.assertEqual(len(resource_map["dummy_1"]), 1)
             self.assertEqual(resource_map["dummy_1"][0].resource_type, "knowledge")
 
+    def test_load_benchmark_all_domains(self):
+        from csc.dataset import load_benchmark
+        for domain in ["hotpotqa", "nq", "nq_chained", "webshop", "toy"]:
+            tasks, res_map = load_benchmark(name=domain, limit=2)
+            self.assertTrue(len(tasks) > 0, f"Domain {domain} returned empty tasks")
+            for t in tasks:
+                self.assertIn(t.task_id, res_map, f"Task {t.task_id} missing from resource map")
+
 
 if __name__ == "__main__":
     unittest.main()

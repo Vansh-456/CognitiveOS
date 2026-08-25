@@ -12,7 +12,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 import pandas as pd
 
-from csc.dataset import load_mem1_benchmark, build_demo_dataset
+from csc.dataset import load_benchmark
 from csc.baselines import (
     full_context,
     standard_rag,
@@ -27,22 +27,16 @@ from csc.llm import OpenAICompatibleLLM, MockLLM
 
 
 def run_llm_evaluation(
+    benchmark: str = "hotpotqa",
     limit: int = 10,
     mock: bool = False,
     api_key: str = None,
     base_url: str = None,
     model: str = None,
 ):
-    mem1_file = Path("data/mem1_hotpotqa_benchmark.json")
-
-    if mem1_file.exists():
-        print(f"Loading MEM1 HotpotQA Benchmark ({mem1_file})...")
-        tasks, resource_map = load_mem1_benchmark(file_path=str(mem1_file), limit=limit)
-        budgets = [200, 500, 1000, 2000, 4000]
-    else:
-        print("Using default toy dataset...")
-        tasks, resource_map = build_demo_dataset()
-        budgets = [20, 40, 80, 120]
+    print(f"Loading Benchmark: {benchmark.upper()}...")
+    tasks, resource_map = load_benchmark(name=benchmark, limit=limit)
+    budgets = [200, 500, 1000, 2000, 4000]
 
     # Initialize LLM
     if mock:
@@ -139,6 +133,13 @@ def run_llm_evaluation(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run live or mock LLM evaluation across baselines.")
+    parser.add_argument(
+        "--benchmark",
+        type=str,
+        default="hotpotqa",
+        choices=["hotpotqa", "nq", "nq_chained", "webshop", "toy"],
+        help="Benchmark domain: 'hotpotqa', 'nq', 'nq_chained', 'webshop', or 'toy'",
+    )
     parser.add_argument("--limit", type=int, default=10, help="Number of benchmark tasks to evaluate")
     parser.add_argument("--mock", action="store_true", help="Run with MockLLM (no API calls)")
     parser.add_argument("--api_key", type=str, default=None, help="LLM API Key")
@@ -147,6 +148,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     run_llm_evaluation(
+        benchmark=args.benchmark,
         limit=args.limit,
         mock=args.mock,
         api_key=args.api_key,
