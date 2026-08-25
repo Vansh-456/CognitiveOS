@@ -1,7 +1,10 @@
-from .types import Task, Resource
+import json
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+from .types import Resource, Task
 
 
-def build_demo_dataset():
+def build_demo_dataset() -> Tuple[List[Task], Dict[str, List[Resource]]]:
     tasks = [
         Task(
             "t1",
@@ -60,3 +63,53 @@ def build_demo_dataset():
     }
 
     return tasks, resources
+
+
+def load_mem1_benchmark(
+    file_path: str = "data/mem1_hotpotqa_benchmark.json",
+    limit: Optional[int] = None,
+) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    """
+    Loads the real MEM1 HotpotQA benchmark dataset.
+    Returns:
+      tasks: List[Task]
+      resource_map: Dict[task_id, List[Resource]]
+    """
+    path = Path(file_path)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Benchmark file '{file_path}' not found. "
+            "Please run 'python scripts/prepare_mem1_hotpotqa.py' to download and format the dataset."
+        )
+
+    with open(path, "r", encoding="utf-8") as f:
+        raw_items = json.load(f)
+
+    if limit is not None:
+        raw_items = raw_items[:limit]
+
+    tasks = []
+    resource_map = {}
+
+    for item in raw_items:
+        task = Task(
+            task_id=item["task_id"],
+            query=item["query"],
+            answer=item["answer"],
+            required_facts=item["required_facts"],
+        )
+        tasks.append(task)
+
+        resources = [
+            Resource(
+                resource_id=r["resource_id"],
+                resource_type=r["resource_type"],
+                text=r["text"],
+                token_cost=r["token_cost"],
+                utility_hint=r.get("utility_hint", 0.0),
+            )
+            for r in item["resources"]
+        ]
+        resource_map[task.task_id] = resources
+
+    return tasks, resource_map

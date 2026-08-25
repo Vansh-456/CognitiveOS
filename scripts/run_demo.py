@@ -1,7 +1,13 @@
+import argparse
+import sys
 from pathlib import Path
+
+# Add project root to sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import pandas as pd
 
-from csc.dataset import build_demo_dataset
+from csc.dataset import build_demo_dataset, load_mem1_benchmark
 from csc.baselines import (
     full_context,
     standard_rag,
@@ -10,16 +16,22 @@ from csc.baselines import (
     mem1_style_recurrent,
 )
 from csc.compiler import CognitiveStateCompiler
-from csc.scorers import TfidfUtilityScorer
+from csc.scorers import DenseUtilityScorer
 from csc.evaluation import evaluate_state
 
 
-def run():
-    tasks, resource_map = build_demo_dataset()
+def run(use_mem1: bool = False, limit: int = 20):
+    mem1_file = Path("data/mem1_hotpotqa_benchmark.json")
 
-    # Small synthetic budgets for the offline smoke test.
-    # Replace with real token budgets after switching to a real tokenizer.
-    budgets = [20, 40, 80, 120]
+    if use_mem1 or mem1_file.exists():
+        print(f"Loading MEM1 HotpotQA Benchmark ({mem1_file})...")
+        tasks, resource_map = load_mem1_benchmark(file_path=str(mem1_file), limit=limit)
+        budgets = [200, 500, 1000, 2000, 4000]
+    else:
+        print("Using default toy dataset (3 synthetic tasks)...")
+        tasks, resource_map = build_demo_dataset()
+        budgets = [20, 40, 80, 120]
+
     rows = []
 
     for budget in budgets:
@@ -32,8 +44,10 @@ def run():
                 "B2_memory_rag": lambda: memory_augmented_rag(task, resources, budget),
                 "B3_relevance_only": lambda: relevance_only(task, resources, budget),
                 "B4_csc": lambda: CognitiveStateCompiler(
-                    TfidfUtilityScorer(
-                        {"knowledge": 0.02, "experience": 0.02, "computation": 0.02}
+                    DenseUtilityScorer(
+                        type_priors={"knowledge": 0.05, "experience": 0.15, "computation": 0.20},
+                        entity_weight=0.25,
+                        hint_weight=0.35,
                     ),
                     budget,
                 ).compile(task, resources),
@@ -73,4 +87,9 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser(description="Run baseline evaluation sweep.")
+    parser.add_argument("--use_mem1", action="store_true", help="Force using MEM1 benchmark dataset")
+    parser.add_argument("--limit", type=int, default=20, help="Number of benchmark tasks to evaluate")
+    args = parser.parse_args()
+
+    run(use_mem1=args.use_mem1, limit=args.limit)
