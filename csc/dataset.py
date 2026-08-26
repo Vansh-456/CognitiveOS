@@ -1,7 +1,10 @@
-from .types import Task, Resource
+import json
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+from .types import Resource, Task
 
 
-def build_demo_dataset():
+def build_demo_dataset() -> Tuple[List[Task], Dict[str, List[Resource]]]:
     tasks = [
         Task(
             "t1",
@@ -60,3 +63,103 @@ def build_demo_dataset():
     }
 
     return tasks, resources
+
+
+def _load_json_benchmark(file_path: Path, limit: Optional[int] = None) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    if not file_path.exists():
+        raise FileNotFoundError(
+            f"Benchmark file '{file_path}' not found. "
+            "Please run the appropriate dataset preparation script in 'scripts/'."
+        )
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        raw_items = json.load(f)
+
+    if limit is not None:
+        raw_items = raw_items[:limit]
+
+    tasks = []
+    resource_map = {}
+
+    for item in raw_items:
+        task = Task(
+            task_id=item["task_id"],
+            query=item["query"],
+            answer=item["answer"],
+            required_facts=item["required_facts"],
+        )
+        tasks.append(task)
+
+        resources = [
+            Resource(
+                resource_id=r["resource_id"],
+                resource_type=r["resource_type"],
+                text=r["text"],
+                token_cost=r["token_cost"],
+                utility_hint=r.get("utility_hint", 0.0),
+            )
+            for r in item["resources"]
+        ]
+        resource_map[task.task_id] = resources
+
+    return tasks, resource_map
+
+
+def load_mem1_benchmark(
+    file_path: str = "data/mem1_hotpotqa_benchmark.json",
+    limit: Optional[int] = None,
+) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    """Loads the official HotpotQA multi-hop benchmark."""
+    return _load_json_benchmark(Path(file_path), limit=limit)
+
+
+def load_nq_benchmark(
+    file_path: str = "data/mem1_nq_benchmark.json",
+    limit: Optional[int] = None,
+) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    """Loads the Natural Questions (NQ) open-domain benchmark."""
+    return _load_json_benchmark(Path(file_path), limit=limit)
+
+
+def load_nq_chained_benchmark(
+    file_path: str = "data/mem1_nq_chained_benchmark.json",
+    limit: Optional[int] = None,
+) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    """Loads the Chained Multi-Objective (Q2, Q4, Q8) multi-turn dialogue benchmark."""
+    return _load_json_benchmark(Path(file_path), limit=limit)
+
+
+def load_webshop_benchmark(
+    file_path: str = "data/webshop_benchmark.json",
+    limit: Optional[int] = None,
+) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    """Loads the WebShop interactive e-commerce tool environment benchmark."""
+    return _load_json_benchmark(Path(file_path), limit=limit)
+
+
+def load_benchmark(
+    name: str = "hotpotqa",
+    limit: Optional[int] = None,
+) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    """
+    Unified router for loading any of the 4 benchmark datasets:
+    - 'hotpotqa' (or 'mem1')
+    - 'nq'
+    - 'nq_chained'
+    - 'webshop'
+    - 'toy' (fallback)
+    """
+    name_clean = name.lower().strip()
+    if name_clean in ("hotpotqa", "mem1", "default"):
+        return load_mem1_benchmark(limit=limit)
+    elif name_clean == "nq":
+        return load_nq_benchmark(limit=limit)
+    elif name_clean in ("nq_chained", "chained", "multiturn"):
+        return load_nq_chained_benchmark(limit=limit)
+    elif name_clean in ("webshop", "shop"):
+        return load_webshop_benchmark(limit=limit)
+    elif name_clean == "toy":
+        tasks, res = build_demo_dataset()
+        return (tasks[:limit], res) if limit else (tasks, res)
+    else:
+        raise ValueError(f"Unknown benchmark '{name}'. Choose from: 'hotpotqa', 'nq', 'nq_chained', 'webshop', 'toy'.")
