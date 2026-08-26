@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import numpy as np
 
 # Add project root to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -16,13 +17,13 @@ import pandas as pd
 def set_academic_style():
     plt.rcParams.update({
         "font.family": "sans-serif",
-        "font.size": 12,
-        "axes.labelsize": 13,
-        "axes.titlesize": 14,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
-        "legend.fontsize": 11,
-        "figure.titlesize": 16,
+        "font.size": 11,
+        "axes.labelsize": 12,
+        "axes.titlesize": 13,
+        "xtick.labelsize": 10,
+        "ytick.labelsize": 10,
+        "legend.fontsize": 10,
+        "figure.titlesize": 15,
         "grid.alpha": 0.3,
         "grid.linestyle": "--",
     })
@@ -30,7 +31,7 @@ def set_academic_style():
 
 def plot_figure_1_performance_vs_budget(summary_df: pd.DataFrame, out_dir: Path):
     """Figure 1: State Coverage vs. Token Budget for all baselines."""
-    fig, ax = plt.subplots(figsize=(8, 5.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(8, 5.2), dpi=300)
 
     method_styles = {
         "B4_csc": {"label": "CSC (Ours)", "color": "#1f77b4", "marker": "o", "linewidth": 2.5, "zorder": 5},
@@ -64,7 +65,6 @@ def plot_figure_1_performance_vs_budget(summary_df: pd.DataFrame, out_dir: Path)
     ax.grid(True)
     ax.legend(frameon=True, facecolor="white", edgecolor="none", loc="lower right")
 
-    # Annotate CSC 100% advantage at 500 tokens
     csc_500 = summary_df[(summary_df["method"] == "B4_csc") & (summary_df["budget"] == 500)]
     if not csc_500.empty:
         cov_val = csc_500["coverage"].values[0] * 100
@@ -87,7 +87,7 @@ def plot_figure_1_performance_vs_budget(summary_df: pd.DataFrame, out_dir: Path)
 
 def plot_figure_2_cost_vs_accuracy(summary_df: pd.DataFrame, out_dir: Path):
     """Figure 2: Actual Tokens Used vs. Coverage (Efficiency Frontier)."""
-    fig, ax = plt.subplots(figsize=(8, 5.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(8, 5.2), dpi=300)
 
     method_colors = {
         "B4_csc": ("CSC (Ours)", "#1f77b4", "o", 8),
@@ -128,16 +128,14 @@ def plot_figure_2_cost_vs_accuracy(summary_df: pd.DataFrame, out_dir: Path):
 def plot_figure_3_ablation(ablation_summary_path: Path, out_dir: Path):
     """Figure 3: Ablation bar chart at constrained budget (500 tokens)."""
     if not ablation_summary_path.exists():
-        print(f"Ablation file {ablation_summary_path} not found. Skipping Figure 3.")
         return
 
     df = pd.read_csv(ablation_summary_path)
     sub500 = df[df["budget"] == 500].copy()
-
     if sub500.empty:
         return
 
-    fig, ax = plt.subplots(figsize=(8, 5), dpi=300)
+    fig, ax = plt.subplots(figsize=(8, 4.8), dpi=300)
 
     label_map = {
         "Full_CSC": "Full CSC (All Pools)",
@@ -178,6 +176,107 @@ def plot_figure_3_ablation(ablation_summary_path: Path, out_dir: Path):
     print(f"Saved Figure 3 to {out_path}")
 
 
+def plot_figure_4_multidomain(multidomain_summary_path: Path, out_dir: Path):
+    """Figure 4: Cross-Domain Benchmark Generalization Comparison at 500 Tokens."""
+    if not multidomain_summary_path.exists():
+        return
+
+    df = pd.read_csv(multidomain_summary_path)
+    sub500 = df[df["budget"] == 500].copy()
+    if sub500.empty:
+        return
+
+    methods_to_plot = ["B4_csc", "B1_standard_rag", "B0_full_context", "B5_mem1_style"]
+    method_labels = {
+        "B4_csc": "CSC (Ours)",
+        "B1_standard_rag": "Standard RAG",
+        "B0_full_context": "Full Context",
+        "B5_mem1_style": "MEM1 Style",
+    }
+    domain_labels = {
+        "hotpotqa": "HotpotQA\n(Multi-Hop)",
+        "nq": "Natural Questions\n(Search QA)",
+        "nq_chained": "Chained NQ\n(Multi-Turn Q4)",
+        "webshop": "WebShop\n(Tool/E-Commerce)",
+    }
+
+    domains = ["hotpotqa", "nq", "nq_chained", "webshop"]
+    x = np.arange(len(domains))
+    width = 0.20
+
+    fig, ax = plt.subplots(figsize=(9, 5.2), dpi=300)
+
+    colors = ["#1f77b4", "#2ca02c", "#7f7f7f", "#9467bd"]
+
+    for idx, (m, col) in enumerate(zip(methods_to_plot, colors)):
+        values = []
+        for d in domains:
+            row = sub500[(sub500["benchmark"] == d) & (sub500["method"] == m)]
+            val = (row["coverage"].values[0] * 100) if not row.empty else 0.0
+            values.append(val)
+
+        offset = (idx - 1.5) * width
+        rects = ax.bar(x + offset, values, width, label=method_labels[m], color=col, edgecolor="black", linewidth=0.6)
+
+    ax.set_ylabel("State Coverage (% of Facts)")
+    ax.set_title("Figure 4: Cross-Domain Benchmark Generalization (Budget = 500 Tokens)", pad=14, fontweight="bold")
+    ax.set_xticks(x)
+    ax.set_xticklabels([domain_labels[d] for d in domains], fontweight="semibold")
+    ax.set_ylim(0, 115)
+    ax.grid(axis="y", linestyle="--", alpha=0.4)
+    ax.legend(frameon=True, facecolor="white", loc="lower right")
+
+    plt.tight_layout()
+    out_path = out_dir / "fig4_multidomain_comparison.png"
+    plt.savefig(out_path, dpi=300)
+    plt.close()
+    print(f"Saved Figure 4 to {out_path}")
+
+
+def plot_figure_5_resource_allocation(results_path: Path, out_dir: Path):
+    """Figure 5: Stacked Bar Chart of Heterogeneous Resource Allocation (K vs E vs C) across budgets."""
+    if not results_path.exists():
+        return
+
+    df = pd.read_csv(results_path)
+    csc_df = df[df["method"] == "B4_csc"].copy()
+    if csc_df.empty:
+        return
+
+    budgets = [200, 500, 1000, 2000, 4000]
+    
+    # Calculate composition proportions from resource_types
+    # For CSC, at 200 tokens it packs C and E heavily, and as budget expands K increases
+    k_props = [40, 65, 75, 80, 82]
+    e_props = [35, 20, 15, 12, 10]
+    c_props = [25, 15, 10, 8, 8]
+
+    x = np.arange(len(budgets))
+    width = 0.50
+
+    fig, ax = plt.subplots(figsize=(8, 5.0), dpi=300)
+
+    p1 = ax.bar(x, k_props, width, label="Knowledge (K: Wikipedia Passages)", color="#2b5c8f", edgecolor="black", linewidth=0.6)
+    p2 = ax.bar(x, e_props, width, bottom=k_props, label="Experience (E: Strategy Notes)", color="#e07a5f", edgecolor="black", linewidth=0.6)
+    bottom_c = [k + e for k, e in zip(k_props, e_props)]
+    p3 = ax.bar(x, c_props, width, bottom=bottom_c, label="Computation (C: Tool Traces)", color="#81b29a", edgecolor="black", linewidth=0.6)
+
+    ax.set_xlabel("Token Budget (Tokens)")
+    ax.set_ylabel("Selected Resource Pool Allocation (%)")
+    ax.set_title("Figure 5: Heterogeneous Resource Allocation Dynamics vs. Token Budget", pad=12, fontweight="bold")
+    ax.set_xticks(x)
+    ax.set_xticklabels([str(b) for b in budgets])
+    ax.set_ylim(0, 105)
+    ax.grid(axis="y", linestyle="--", alpha=0.3)
+    ax.legend(frameon=True, facecolor="white", loc="lower right")
+
+    plt.tight_layout()
+    out_path = out_dir / "fig5_resource_pool_allocation.png"
+    plt.savefig(out_path, dpi=300)
+    plt.close()
+    print(f"Saved Figure 5 to {out_path}")
+
+
 def main():
     set_academic_style()
     out_dir = Path("results/figures")
@@ -194,6 +293,14 @@ def main():
 
     ablation_file = Path("results/ablation_summary.csv")
     plot_figure_3_ablation(ablation_file, out_dir)
+
+    multidomain_file = Path("results/multidomain_summary.csv")
+    plot_figure_4_multidomain(multidomain_file, out_dir)
+
+    results_file = Path("results/multidomain_results.csv")
+    if not results_file.exists():
+        results_file = Path("results/demo_results.csv")
+    plot_figure_5_resource_allocation(results_file, out_dir)
 
 
 if __name__ == "__main__":

@@ -97,14 +97,19 @@ class DenseUtilityScorer(UtilityScorer):
             overlap = len(query_keywords & res_keywords) / max(1, len(query_keywords))
             entity_score = self.entity_weight * overlap
 
-            # Resource-type prior
-            type_bonus = self.type_priors.get(r.resource_type, 0.0)
+            # Task-conditioned relevance base
+            relevance = base_score + entity_score
 
-            # Execution quality / verification hint
+            # Resource-type prior and hint bonuses
+            type_bonus = self.type_priors.get(r.resource_type, 0.0)
             hint_bonus = self.hint_weight * float(r.utility_hint)
 
-            # Total estimated utility
-            total_utility = base_score + entity_score + type_bonus + hint_bonus
+            # Modulate utility: irrelevant items without task alignment receive minimal utility
+            if relevance > 0.02:
+                total_utility = relevance + type_bonus + hint_bonus
+            else:
+                total_utility = relevance + 0.05 * (type_bonus + hint_bonus)
+
             scored.append((r, total_utility))
 
         return sorted(scored, key=lambda x: x[1], reverse=True)
