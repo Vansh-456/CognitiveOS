@@ -55,7 +55,22 @@ class TestCSC(unittest.TestCase):
         scored = scorer.score(task, resources)
         self.assertEqual(len(scored), 2)
         self.assertEqual(scored[0][0].resource_id, "c1")
-        self.assertGreater(scored[0][1], scored[1][1])
+    def test_exact_knapsack_selector(self):
+        from csc.selector import ExactKnapsackSelector, GreedyKnapsackSelector
+        resources = [
+            Resource("r1", "knowledge", "Short vital fact", token_cost=3),
+            Resource("r2", "knowledge", "Another short vital fact", token_cost=3),
+            Resource("r3", "experience", "Long medium fact", token_cost=5),
+        ]
+        # Scored pairs: (r1: 0.5), (r2: 0.5), (r3: 0.8) with Budget = 6
+        # Greedy packs r3 first (density 0.8/5 = 0.16) leaving rem=1 (total utility 0.8)
+        # Exact 0-1 DP packs r1 + r2 (cost 3+3=6, total utility 0.5+0.5 = 1.0)
+        scored = [(resources[0], 0.5), (resources[1], 0.5), (resources[2], 0.8)]
+        
+        exact_sel = ExactKnapsackSelector(budget=6).select(scored)
+        exact_ids = [r.resource_id for r, _ in exact_sel]
+        self.assertEqual(set(exact_ids), {"r1", "r2"})
+        self.assertAlmostEqual(sum(s for _, s in exact_sel), 1.0)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+% Table 2: Ablation Study across Token Budgets
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Ablation Variant} & \textbf{B=200} & \textbf{B=500} & \textbf{B=1000} & \textbf{B=2000} \\
+\midrule
+\textbf{Full CSC (Learned GBT)} & 88.9\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+Heuristic Utility (w/o Learning) & 53.3\% & 95.6\% & 95.6\% & \textbf{100.0\%} \\
+w/o Experience Pool ($E$) & 88.9\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+w/o Computation Pool ($C$) & 88.9\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+w/o Budget Density Ordering & \textbf{91.1\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+Relevance Only (No Resource Types) & 44.4\% & 75.6\% & 93.3\% & \textbf{100.0\%} \\
+\bottomrule
+\end{tabular}
+\caption{Ablation analysis on HotpotQA across token budgets, isolating the contribution of learned utility scoring, heterogeneous memory pools, and knapsack density packing.}
+\label{tab:ablation_study}
+\end{table}
