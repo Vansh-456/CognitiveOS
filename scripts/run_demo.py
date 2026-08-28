@@ -89,6 +89,22 @@ def main():
     out.mkdir(exist_ok=True)
     combined_df.to_csv(out / "multidomain_results.csv", index=False)
 
+    # Also update demo_results.csv and demo_summary.csv for HotpotQA baseline consistency
+    hotpot_df = combined_df[combined_df["benchmark"] == "hotpotqa"].copy()
+    if not hotpot_df.empty:
+        hotpot_df.drop(columns=["benchmark"]).to_csv(out / "demo_results.csv", index=False)
+        demo_summary = (
+            hotpot_df.groupby(["method", "budget"])
+            .agg(
+                coverage=("coverage", "mean"),
+                state_precision=("state_precision", "mean"),
+                token_cost=("token_cost", "mean"),
+                selected_resources=("selected_resources", "mean"),
+            )
+            .reset_index()
+        )
+        demo_summary.to_csv(out / "demo_summary.csv", index=False)
+
     summary = (
         combined_df.groupby(["benchmark", "method", "budget"])
         .agg(
