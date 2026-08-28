@@ -41,18 +41,10 @@ def run_benchmark_eval(benchmark_name: str, limit: int = 15) -> pd.DataFrame:
                 "B2_memory_rag": lambda: memory_augmented_rag(task, resources, budget),
                 "B3_relevance_only": lambda: relevance_only(task, resources, budget),
                 "B4_csc": lambda: CognitiveStateCompiler(
-                    DenseUtilityScorer(
-                        type_priors={"knowledge": 0.05, "experience": 0.15, "computation": 0.20},
-                        entity_weight=0.25,
-                        hint_weight=0.35,
-                    ),
-                    budget,
-                ).compile(task, resources),
-                "B5_mem1_style": lambda: mem1_style_recurrent(task, resources, budget),
-                "B6_learned_csc": lambda: CognitiveStateCompiler(
                     TrainedUtilityScorer(),
                     budget,
                 ).compile(task, resources),
+                "B5_mem1_style": lambda: mem1_style_recurrent(task, resources, budget),
             }
 
             for method, fn in methods.items():

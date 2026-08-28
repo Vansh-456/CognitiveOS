@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pandas as pd
 from csc.types import Task, Resource, CompiledState
 from csc.compiler import CognitiveStateCompiler
-from csc.scorers import DenseUtilityScorer
+from csc.learned_scorer import TrainedUtilityScorer
 from csc.evaluation import evaluate_state, evaluate_prediction
 from csc.tokenizer import count_tokens
 from csc.dataset import load_mem1_benchmark
@@ -147,11 +147,7 @@ def run_sliding_window(episode_turns: List[Tuple[Task, List[Resource]]], budget:
 def run_csc_compiler(episode_turns: List[Tuple[Task, List[Resource]]], budget: int = 512) -> List[Dict[str, Any]]:
     """Cognitive State Compilation: solves budgeted knapsack across heterogeneous {K, E, C}."""
     compiler = CognitiveStateCompiler(
-        scorer=DenseUtilityScorer(
-            type_priors={"knowledge": 0.05, "experience": 0.15, "computation": 0.15},
-            entity_weight=0.35,
-            hint_weight=0.25,
-        ),
+        scorer=TrainedUtilityScorer(),
         budget=budget,
         type_caps={"knowledge": int(budget * 0.70), "experience": int(budget * 0.20), "computation": int(budget * 0.20)},
     )
@@ -178,9 +174,14 @@ def main():
     print("CSC vs. MEM1 LITERATURE BENCHMARK EVALUATION")
     print("=" * 80)
     
-    # 1. Prepare raw tasks
-    raw_rows = fetch_nq_rows(args.samples)
-    nq_tasks = build_nq_benchmark(raw_rows[:args.samples])
+    # 1. Prepare raw tasks (prefer local benchmark file to avoid network delays)
+    nq_file = Path("data/mem1_nq_benchmark.json")
+    if nq_file.exists():
+        with open(nq_file, "r", encoding="utf-8") as f:
+            nq_tasks = json.load(f)[:args.samples]
+    else:
+        raw_rows = fetch_nq_rows(args.samples)
+        nq_tasks = build_nq_benchmark(raw_rows[:args.samples])
     
     horizons = [2, 4, 8, 16]
     episodes_data = build_multiturn_episode_dataset(nq_tasks, horizons)

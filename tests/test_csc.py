@@ -1,6 +1,7 @@
 import unittest
 from csc.types import Task, Resource
 from csc.scorers import TfidfUtilityScorer, DenseUtilityScorer, RelevanceOnlyScorer
+from csc.learned_scorer import TrainedUtilityScorer
 from csc.compiler import CognitiveStateCompiler
 from csc.tokenizer import count_tokens, truncate_to_tokens
 
@@ -41,6 +42,18 @@ class TestCSC(unittest.TestCase):
         scored = scorer.score(task, resources)
         self.assertEqual(len(scored), 2)
         # The relevant computation trace should be ranked #1
+        self.assertEqual(scored[0][0].resource_id, "c1")
+        self.assertGreater(scored[0][1], scored[1][1])
+
+    def test_trained_utility_scorer(self):
+        task = Task("t1", "latency benchmark in Delhi", "28 ms", ["Delhi latency"])
+        resources = [
+            Resource("c1", "computation", "Latency benchmark result: Delhi 28 ms.", 10, utility_hint=0.8),
+            Resource("k1", "knowledge", "Unrelated weather report for Singapore.", 10, utility_hint=0.0),
+        ]
+        scorer = TrainedUtilityScorer()
+        scored = scorer.score(task, resources)
+        self.assertEqual(len(scored), 2)
         self.assertEqual(scored[0][0].resource_id, "c1")
         self.assertGreater(scored[0][1], scored[1][1])
 

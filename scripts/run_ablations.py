@@ -32,11 +32,13 @@ def run_ablations(limit: int = 15):
         budgets = [20, 40, 80, 120]
 
     rows = []
-    scorer = DenseUtilityScorer(
+    learned_scorer = TrainedUtilityScorer()
+    heuristic_scorer = DenseUtilityScorer(
         type_priors={"knowledge": 0.05, "experience": 0.15, "computation": 0.20},
         entity_weight=0.25,
         hint_weight=0.35,
     )
+    rel_scorer = RelevanceOnlyScorer()
 
     print(f"Running ablation study across {len(tasks)} tasks and {len(budgets)} budgets...")
 
@@ -44,19 +46,19 @@ def run_ablations(limit: int = 15):
         for task in tasks:
             resources = resource_map[task.task_id]
 
-            # 1. Full CSC (Knowledge + Experience + Computation)
-            full_csc_state = CognitiveStateCompiler(scorer, budget).compile(task, resources)
+            # 1. Full CSC (Learned GBT Scorer over all pools {K, E, C})
+            full_csc_state = CognitiveStateCompiler(learned_scorer, budget).compile(task, resources)
 
             # 2. CSC without Experience (K + C only)
             no_exp_resources = [r for r in resources if r.resource_type != "experience"]
-            no_exp_state = CognitiveStateCompiler(scorer, budget).compile(task, no_exp_resources)
+            no_exp_state = CognitiveStateCompiler(learned_scorer, budget).compile(task, no_exp_resources)
 
             # 3. CSC without Computation (K + E only)
             no_comp_resources = [r for r in resources if r.resource_type != "computation"]
-            no_comp_state = CognitiveStateCompiler(scorer, budget).compile(task, no_comp_resources)
+            no_comp_state = CognitiveStateCompiler(learned_scorer, budget).compile(task, no_comp_resources)
 
-            # 4. CSC without Budget Constraint (Greedy by score, ignoring token cost density)
-            scored = scorer.score(task, resources)
+            # 4. CSC without Budget Density (Greedy by utility score, ignoring token cost density)
+            scored = learned_scorer.score(task, resources)
             unconstrained_selected = []
             rem = budget
             for r, s in scored:
@@ -65,23 +67,21 @@ def run_ablations(limit: int = 15):
                     rem -= r.token_cost
             no_budget_state = StateComposer().compose(unconstrained_selected, task.query, budget)
 
-            # 5. Relevance-Only (No resource-type priors)
-            rel_scorer = RelevanceOnlyScorer()
+            # 5. CSC with Heuristic-Only Scorer (TF-IDF + fixed priors)
+            heuristic_state = CognitiveStateCompiler(heuristic_scorer, budget).compile(task, resources)
+
+            # 6. Relevance-Only (No resource-type priors or learning)
             rel_scored = rel_scorer.score(task, resources)
             rel_selected = BudgetedSelector(budget).select(rel_scored)
             rel_state = StateComposer().compose(rel_selected, task.query, budget)
-
-            # 6. Learned CSC (Trained GBT scorer)
-            learned_scorer = TrainedUtilityScorer()
-            learned_state = CognitiveStateCompiler(learned_scorer, budget).compile(task, resources)
 
             ablations = {
                 "Full_CSC": full_csc_state,
                 "CSC_no_experience": no_exp_state,
                 "CSC_no_computation": no_comp_state,
                 "CSC_no_budget_density": no_budget_state,
+                "CSC_heuristic_dense": heuristic_state,
                 "Relevance_Only": rel_state,
-                "Learned_CSC": learned_state,
             }
 
             for name, state in ablations.items():

@@ -40,9 +40,10 @@ def _extract_keywords(text: str) -> set:
     return {w for w in words if w not in stopwords}
 
 
-def extract_features(task: Task, resource: Resource, all_resources: List[Resource]) -> np.ndarray:
+def extract_batch_features(task: Task, resources: List[Resource]) -> np.ndarray:
     """
-    Extracts a fixed-size feature vector for a (task, resource) pair.
+    Extracts fixed-size feature vectors for a batch of resources under a given task.
+    Fits TF-IDF vectorizers once per task for maximum vectorization speed.
 
     Features (9-dim):
         0: TF-IDF cosine similarity (unigram)
@@ -55,48 +56,49 @@ def extract_features(task: Task, resource: Resource, all_resources: List[Resourc
         7: Normalized token cost (relative to max in pool)
         8: Utility density (hint / token_cost)
     """
-    # TF-IDF unigram similarity
-    texts_uni = [task.query, resource.text]
+    if not resources:
+        return np.empty((0, 9), dtype=np.float64)
+
+    texts = [task.query] + [r.text for r in resources]
     try:
         vec_uni = TfidfVectorizer(stop_words="english", ngram_range=(1, 1))
-        X_uni = vec_uni.fit_transform(texts_uni)
-        sim_uni = float(cosine_similarity(X_uni[0:1], X_uni[1:]).ravel()[0])
-    except ValueError:
-        sim_uni = 0.0
+        X_uni = vec_uni.fit_transform(texts)
+        sims_uni = cosine_similarity(X_uni[0:1], X_uni[1:]).ravel()
+    except Exception:
+        sims_uni = np.zeros(len(resources))
 
-    # TF-IDF bigram similarity
     try:
         vec_bi = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
-        X_bi = vec_bi.fit_transform(texts_uni)
-        sim_bi = float(cosine_similarity(X_bi[0:1], X_bi[1:]).ravel()[0])
-    except ValueError:
-        sim_bi = 0.0
+        X_bi = vec_bi.fit_transform(texts)
+        sims_bi = cosine_similarity(X_bi[0:1], X_bi[1:]).ravel()
+    except Exception:
+        sims_bi = np.zeros(len(resources))
 
-    # Keyword overlap
     query_kw = _extract_keywords(task.query)
-    res_kw = _extract_keywords(resource.text)
-    overlap = len(query_kw & res_kw) / max(1, len(query_kw))
+    max_cost = max((r.token_cost for r in resources), default=1)
 
-    # Resource type one-hot
-    is_knowledge = float(resource.resource_type == "knowledge")
-    is_experience = float(resource.resource_type == "experience")
-    is_computation = float(resource.resource_type == "computation")
+    rows = []
+    for i, r in enumerate(resources):
+        res_kw = _extract_keywords(r.text)
+        overlap = len(query_kw & res_kw) / max(1, len(query_kw))
+        is_knowledge = float(r.resource_type == "knowledge")
+        is_experience = float(r.resource_type == "experience")
+        is_computation = float(r.resource_type == "computation")
+        hint = float(r.utility_hint)
+        norm_cost = r.token_cost / max(1, max_cost)
+        density = hint / max(1, r.token_cost)
 
-    # Utility hint
-    hint = float(resource.utility_hint)
+        rows.append([
+            sims_uni[i], sims_bi[i], overlap,
+            is_knowledge, is_experience, is_computation,
+            hint, norm_cost, density,
+        ])
+    return np.array(rows, dtype=np.float64)
 
-    # Normalized token cost
-    max_cost = max(r.token_cost for r in all_resources) if all_resources else 1
-    norm_cost = resource.token_cost / max(1, max_cost)
 
-    # Utility density
-    density = hint / max(1, resource.token_cost)
-
-    return np.array([
-        sim_uni, sim_bi, overlap,
-        is_knowledge, is_experience, is_computation,
-        hint, norm_cost, density,
-    ], dtype=np.float64)
+def extract_features(task: Task, resource: Resource, all_resources: List[Resource]) -> np.ndarray:
+    """Extracts features for a single (task, resource) pair."""
+    return extract_batch_features(task, [resource])[0]
 
 
 FEATURE_NAMES = [
@@ -127,17 +129,17 @@ def build_training_data(
 
     for task in tasks:
         resources = resource_map.get(task.task_id, [])
-        for resource in resources:
-            # Extract features
-            feats = extract_features(task, resource, resources)
-            X_rows.append(feats)
+        if not resources:
+            continue
+        feats = extract_batch_features(task, resources)
+        X_rows.append(feats)
 
-            # Derive label: does this resource cover any required fact?
+        for resource in resources:
             rtext = _normalize(resource.text)
             is_useful = any(_normalize(fact) in rtext for fact in task.required_facts)
             y_rows.append(float(is_useful))
 
-    return np.array(X_rows), np.array(y_rows)
+    return np.vstack(X_rows), np.array(y_rows)
 
 
 class TrainedUtilityScorer(UtilityScorer):
@@ -181,10 +183,8 @@ class TrainedUtilityScorer(UtilityScorer):
             print("Warning: No trained model found, falling back to DenseUtilityScorer.")
             return self._fallback.score(task, resources)
 
-        # Extract features for all resources
-        features = np.array([
-            extract_features(task, r, resources) for r in resources
-        ])
+        # Extract features for all resources in batch
+        features = extract_batch_features(task, resources)
 
         # Predict P(useful)
         probabilities = self._model.predict_proba(features)[:, 1]
