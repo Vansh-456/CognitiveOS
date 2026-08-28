@@ -138,7 +138,8 @@ def plot_figure_3_ablation(ablation_summary_path: Path, out_dir: Path):
     fig, ax = plt.subplots(figsize=(8, 4.8), dpi=300)
 
     label_map = {
-        "Full_CSC": "Full CSC (All Pools)",
+        "Full_CSC": "Full CSC (Learned GBT)",
+        "CSC_heuristic_dense": "Heuristic Utility (No Learn)",
         "CSC_no_experience": "w/o Experience (E)",
         "CSC_no_computation": "w/o Computation (C)",
         "CSC_no_budget_density": "w/o Budget Density",
@@ -146,7 +147,7 @@ def plot_figure_3_ablation(ablation_summary_path: Path, out_dir: Path):
     }
 
     sub500["label"] = sub500["ablation"].map(lambda x: label_map.get(x, x))
-    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
 
     bars = ax.bar(sub500["label"], sub500["coverage"] * 100, color=colors[:len(sub500)], width=0.55, edgecolor="black", linewidth=0.8)
 
@@ -282,20 +283,26 @@ def main():
     out_dir = Path("results/figures")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    summary_file = Path("results/demo_summary.csv")
-    if not summary_file.exists():
-        summary_file = Path("results/llm_eval_summary.csv")
+    multidomain_file = Path("results/multidomain_summary.csv")
+    summary_df = None
+    if multidomain_file.exists():
+        mdf = pd.read_csv(multidomain_file)
+        hotpot_df = mdf[mdf["benchmark"] == "hotpotqa"].copy()
+        summary_df = hotpot_df if not hotpot_df.empty else mdf
+    else:
+        demo_file = Path("results/demo_summary.csv")
+        if demo_file.exists():
+            summary_df = pd.read_csv(demo_file)
 
-    if summary_file.exists():
-        df = pd.read_csv(summary_file)
-        plot_figure_1_performance_vs_budget(df, out_dir)
-        plot_figure_2_cost_vs_accuracy(df, out_dir)
+    if summary_df is not None:
+        plot_figure_1_performance_vs_budget(summary_df, out_dir)
+        plot_figure_2_cost_vs_accuracy(summary_df, out_dir)
 
     ablation_file = Path("results/ablation_summary.csv")
     plot_figure_3_ablation(ablation_file, out_dir)
 
-    multidomain_file = Path("results/multidomain_summary.csv")
-    plot_figure_4_multidomain(multidomain_file, out_dir)
+    if multidomain_file.exists():
+        plot_figure_4_multidomain(multidomain_file, out_dir)
 
     results_file = Path("results/multidomain_results.csv")
     if not results_file.exists():

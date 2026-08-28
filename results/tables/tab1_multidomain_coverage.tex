@@ -1,0 +1,44 @@
+% Table 1: Cross-Domain Reasoning State Coverage vs. Token Budget
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Domain} & \textbf{Method} & \textbf{B=200} & \textbf{B=500} & \textbf{B=1000} & \textbf{B=2000} \\
+\midrule
+\multicolumn{6}{l}{\textit{HotpotQA (Multi-Hop)}} \\[2pt]
+\hspace{3mm} & \textbf{CSC (Ours)} & \textbf{88.9\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Standard RAG & 55.6\% & 82.2\% & 95.6\% & 95.6\% \\
+\hspace{3mm} & Memory RAG & 48.9\% & 75.6\% & 93.3\% & \textbf{100.0\%} \\
+\hspace{3mm} & Relevance Only & 44.4\% & 75.6\% & 93.3\% & \textbf{100.0\%} \\
+\hspace{3mm} & MEM1 Recurrent & 24.4\% & 53.3\% & 86.7\% & \textbf{100.0\%} \\
+\hspace{3mm} & Full Context & 24.4\% & 53.3\% & 86.7\% & \textbf{100.0\%} \\
+\midrule
+\multicolumn{6}{l}{\textit{Natural Questions (Search QA)}} \\[2pt]
+\hspace{3mm} & \textbf{CSC (Ours)} & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Standard RAG & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Memory RAG & 40.0\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Relevance Only & 13.3\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & MEM1 Recurrent & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Full Context & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\midrule
+\multicolumn{6}{l}{\textit{Chained NQ (Multi-Turn Q4)}} \\[2pt]
+\hspace{3mm} & \textbf{CSC (Ours)} & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Standard RAG & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Memory RAG & 20.0\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Relevance Only & 6.7\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & MEM1 Recurrent & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Full Context & \textbf{53.3\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\midrule
+\multicolumn{6}{l}{\textit{WebShop (E-Commerce)}} \\[2pt]
+\hspace{3mm} & \textbf{CSC (Ours)} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Standard RAG & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Memory RAG & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Relevance Only & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & MEM1 Recurrent & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\hspace{3mm} & Full Context & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+\bottomrule
+\end{tabular}
+\caption{State coverage (\% of gold facts retained) across heterogeneous domains and token budgets. Bold indicates the highest coverage per budget tier.}
+\label{tab:multidomain_coverage}
+\end{table*}

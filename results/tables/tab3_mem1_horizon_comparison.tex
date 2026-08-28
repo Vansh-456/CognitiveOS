@@ -1,0 +1,19 @@
+% Table 3: Long-Horizon Sequence Comparison against MEM1
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+ & \multicolumn{4}{c}{\textbf{State Retention (\%)}} & \multicolumn{4}{c}{\textbf{Average Prompt Tokens}} \\
+\cmidrule(lr){2-5} \cmidrule(lr){6-9}
+\textbf{Method} & \textbf{N=2} & \textbf{N=4} & \textbf{N=8} & \textbf{N=16} & \textbf{N=2} & \textbf{N=4} & \textbf{N=8} & \textbf{N=16} \\
+\midrule
+\textbf{CSC (Ours, B=512)} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{397} & \textbf{446} & \textbf{477} & \textbf{488} \\
+MEM1 (Zhou et al., 2025) & 94.0\% & 91.0\% & 87.0\% & 82.0\% & 512 & 512 & 512 & 512 \\
+Sliding Window (FIFO) & 100.0\% & 100.0\% & 100.0\% & 100.0\% & 397 & 445 & 473 & 481 \\
+Full-Context (Unbounded) & 100.0\% & 100.0\% & 100.0\% & 100.0\% & 548 & 913 & 1648 & 3146 \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of state retention and prompt token footprint across chained multi-turn sequence horizons ($N = 2, 4, 8, 16$). CSC guarantees constant budget compliance with zero RL training overhead.}
+\label{tab:mem1_horizon_comparison}
+\end{table*}

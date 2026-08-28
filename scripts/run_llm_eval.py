@@ -21,7 +21,7 @@ from csc.baselines import (
     mem1_style_recurrent,
 )
 from csc.compiler import CognitiveStateCompiler
-from csc.scorers import DenseUtilityScorer
+from csc.learned_scorer import TrainedUtilityScorer
 from csc.evaluation import evaluate_state, evaluate_prediction
 from csc.llm import OpenAICompatibleLLM, MockLLM
 
@@ -69,11 +69,7 @@ def run_llm_evaluation(
                 "B2_memory_rag": lambda: memory_augmented_rag(task, resources, budget),
                 "B3_relevance_only": lambda: relevance_only(task, resources, budget),
                 "B4_csc": lambda: CognitiveStateCompiler(
-                    DenseUtilityScorer(
-                        type_priors={"knowledge": 0.05, "experience": 0.15, "computation": 0.20},
-                        entity_weight=0.25,
-                        hint_weight=0.35,
-                    ),
+                    TrainedUtilityScorer(),
                     budget,
                 ).compile(task, resources),
                 "B5_mem1_style": lambda: mem1_style_recurrent(task, resources, budget),

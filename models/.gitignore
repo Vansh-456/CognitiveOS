@@ -1,0 +1,7 @@
+# Ignore trained model binary files
+*.joblib
+*.pkl
+*.pickle
+
+# Keep this .gitignore
+!.gitignore

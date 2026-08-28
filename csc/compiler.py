@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 from .composer import StateComposer
 from .scorers import UtilityScorer
-from .selector import BudgetedSelector
+from .selector import BudgetedSelector, GreedyKnapsackSelector, ExactKnapsackSelector
 from .types import CompiledState, Resource, Task
 
 
@@ -11,15 +11,17 @@ class CognitiveStateCompiler:
         scorer: UtilityScorer,
         budget: int,
         type_caps: Optional[dict] = None,
+        selector_cls: Any = GreedyKnapsackSelector,
     ):
         self.scorer = scorer
         self.budget = budget
         self.type_caps = type_caps
+        self.selector_cls = selector_cls
         self.composer = StateComposer()
 
     def compile(self, task: Task, resources: List[Resource]) -> CompiledState:
         scored = self.scorer.score(task, resources)
-        selected = BudgetedSelector(
+        selected = self.selector_cls(
             budget=self.budget,
             type_caps=self.type_caps,
         ).select(scored)
