@@ -21,6 +21,7 @@ from csc.baselines import (
 )
 from csc.compiler import CognitiveStateCompiler
 from csc.scorers import DenseUtilityScorer
+from csc.learned_scorer import TrainedUtilityScorer
 from csc.evaluation import evaluate_state
 
 
@@ -48,6 +49,10 @@ def run_benchmark_eval(benchmark_name: str, limit: int = 15) -> pd.DataFrame:
                     budget,
                 ).compile(task, resources),
                 "B5_mem1_style": lambda: mem1_style_recurrent(task, resources, budget),
+                "B6_learned_csc": lambda: CognitiveStateCompiler(
+                    TrainedUtilityScorer(),
+                    budget,
+                ).compile(task, resources),
             }
 
             for method, fn in methods.items():

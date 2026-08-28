@@ -13,6 +13,7 @@ import pandas as pd
 from csc.dataset import load_mem1_benchmark, build_demo_dataset
 from csc.compiler import CognitiveStateCompiler
 from csc.scorers import DenseUtilityScorer, RelevanceOnlyScorer
+from csc.learned_scorer import TrainedUtilityScorer
 from csc.selector import BudgetedSelector
 from csc.composer import StateComposer
 from csc.evaluation import evaluate_state
@@ -70,12 +71,17 @@ def run_ablations(limit: int = 15):
             rel_selected = BudgetedSelector(budget).select(rel_scored)
             rel_state = StateComposer().compose(rel_selected, task.query, budget)
 
+            # 6. Learned CSC (Trained GBT scorer)
+            learned_scorer = TrainedUtilityScorer()
+            learned_state = CognitiveStateCompiler(learned_scorer, budget).compile(task, resources)
+
             ablations = {
                 "Full_CSC": full_csc_state,
                 "CSC_no_experience": no_exp_state,
                 "CSC_no_computation": no_comp_state,
                 "CSC_no_budget_density": no_budget_state,
                 "Relevance_Only": rel_state,
+                "Learned_CSC": learned_state,
             }
 
             for name, state in ablations.items():

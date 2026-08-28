@@ -35,6 +35,7 @@ def plot_figure_1_performance_vs_budget(summary_df: pd.DataFrame, out_dir: Path)
 
     method_styles = {
         "B4_csc": {"label": "CSC (Ours)", "color": "#1f77b4", "marker": "o", "linewidth": 2.5, "zorder": 5},
+        "B6_learned_csc": {"label": "B6: Learned CSC", "color": "#e6a817", "marker": "P", "linewidth": 2.5, "zorder": 5, "linestyle": "-"},
         "B0_full_context": {"label": "B0: Full Context", "color": "#7f7f7f", "marker": "s", "linewidth": 1.5, "linestyle": ":"},
         "B1_standard_rag": {"label": "B1: Standard RAG", "color": "#2ca02c", "marker": "^", "linewidth": 1.8, "linestyle": "--"},
         "B2_memory_rag": {"label": "B2: Memory RAG", "color": "#ff7f0e", "marker": "d", "linewidth": 1.8, "linestyle": "-."},
@@ -91,6 +92,7 @@ def plot_figure_2_cost_vs_accuracy(summary_df: pd.DataFrame, out_dir: Path):
 
     method_colors = {
         "B4_csc": ("CSC (Ours)", "#1f77b4", "o", 8),
+        "B6_learned_csc": ("B6: Learned CSC", "#e6a817", "P", 8),
         "B0_full_context": ("B0: Full Context", "#7f7f7f", "s", 6),
         "B1_standard_rag": ("B1: Standard RAG", "#2ca02c", "^", 7),
         "B2_memory_rag": ("B2: Memory RAG", "#ff7f0e", "d", 7),
@@ -139,6 +141,7 @@ def plot_figure_3_ablation(ablation_summary_path: Path, out_dir: Path):
 
     label_map = {
         "Full_CSC": "Full CSC (All Pools)",
+        "Learned_CSC": "Learned CSC (GBT)",
         "CSC_no_experience": "w/o Experience (E)",
         "CSC_no_computation": "w/o Computation (C)",
         "CSC_no_budget_density": "w/o Budget Density",
@@ -146,7 +149,7 @@ def plot_figure_3_ablation(ablation_summary_path: Path, out_dir: Path):
     }
 
     sub500["label"] = sub500["ablation"].map(lambda x: label_map.get(x, x))
-    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+    colors = ["#1f77b4", "#e6a817", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
 
     bars = ax.bar(sub500["label"], sub500["coverage"] * 100, color=colors[:len(sub500)], width=0.55, edgecolor="black", linewidth=0.8)
 
@@ -186,9 +189,10 @@ def plot_figure_4_multidomain(multidomain_summary_path: Path, out_dir: Path):
     if sub500.empty:
         return
 
-    methods_to_plot = ["B4_csc", "B1_standard_rag", "B0_full_context", "B5_mem1_style"]
+    methods_to_plot = ["B4_csc", "B6_learned_csc", "B1_standard_rag", "B0_full_context", "B5_mem1_style"]
     method_labels = {
-        "B4_csc": "CSC (Ours)",
+        "B4_csc": "CSC (Heuristic)",
+        "B6_learned_csc": "CSC (Learned)",
         "B1_standard_rag": "Standard RAG",
         "B0_full_context": "Full Context",
         "B5_mem1_style": "MEM1 Style",
@@ -202,11 +206,11 @@ def plot_figure_4_multidomain(multidomain_summary_path: Path, out_dir: Path):
 
     domains = ["hotpotqa", "nq", "nq_chained", "webshop"]
     x = np.arange(len(domains))
-    width = 0.20
+    width = 0.16
 
-    fig, ax = plt.subplots(figsize=(9, 5.2), dpi=300)
+    fig, ax = plt.subplots(figsize=(10, 5.4), dpi=300)
 
-    colors = ["#1f77b4", "#2ca02c", "#7f7f7f", "#9467bd"]
+    colors = ["#1f77b4", "#e6a817", "#2ca02c", "#7f7f7f", "#9467bd"]
 
     for idx, (m, col) in enumerate(zip(methods_to_plot, colors)):
         values = []
@@ -215,7 +219,7 @@ def plot_figure_4_multidomain(multidomain_summary_path: Path, out_dir: Path):
             val = (row["coverage"].values[0] * 100) if not row.empty else 0.0
             values.append(val)
 
-        offset = (idx - 1.5) * width
+        offset = (idx - 2.0) * width
         rects = ax.bar(x + offset, values, width, label=method_labels[m], color=col, edgecolor="black", linewidth=0.6)
 
     ax.set_ylabel("State Coverage (% of Facts)")
@@ -282,20 +286,26 @@ def main():
     out_dir = Path("results/figures")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    summary_file = Path("results/demo_summary.csv")
-    if not summary_file.exists():
-        summary_file = Path("results/llm_eval_summary.csv")
+    multidomain_file = Path("results/multidomain_summary.csv")
+    summary_df = None
+    if multidomain_file.exists():
+        mdf = pd.read_csv(multidomain_file)
+        hotpot_df = mdf[mdf["benchmark"] == "hotpotqa"].copy()
+        summary_df = hotpot_df if not hotpot_df.empty else mdf
+    else:
+        demo_file = Path("results/demo_summary.csv")
+        if demo_file.exists():
+            summary_df = pd.read_csv(demo_file)
 
-    if summary_file.exists():
-        df = pd.read_csv(summary_file)
-        plot_figure_1_performance_vs_budget(df, out_dir)
-        plot_figure_2_cost_vs_accuracy(df, out_dir)
+    if summary_df is not None:
+        plot_figure_1_performance_vs_budget(summary_df, out_dir)
+        plot_figure_2_cost_vs_accuracy(summary_df, out_dir)
 
     ablation_file = Path("results/ablation_summary.csv")
     plot_figure_3_ablation(ablation_file, out_dir)
 
-    multidomain_file = Path("results/multidomain_summary.csv")
-    plot_figure_4_multidomain(multidomain_file, out_dir)
+    if multidomain_file.exists():
+        plot_figure_4_multidomain(multidomain_file, out_dir)
 
     results_file = Path("results/multidomain_results.csv")
     if not results_file.exists():
