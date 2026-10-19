@@ -24,6 +24,28 @@ def standard_rag(task: Task, resources: List[Resource], budget: int, k: int = 5)
     return StateComposer().compose(selected, task.query, budget)
 
 
+def standard_rag_greedy_budget_filled(task: Task, resources: List[Resource], budget: int) -> CompiledState:
+    """
+    Baseline B1-Full: Knowledge-only retrieval that greedily fills the entire budget
+    without arbitrary top-k truncation (answering Reviewer rTKQ W3).
+    """
+    knowledge = [r for r in resources if r.resource_type == "knowledge"]
+    scored = RelevanceOnlyScorer().score(task, knowledge)
+    selected = BudgetedSelector(budget).select(scored)
+    return StateComposer().compose(selected, task.query, budget)
+
+
+def unbounded_full_context(task: Task, resources: List[Resource]) -> CompiledState:
+    """
+    Unbounded Full-Context: Ingests all available candidate resources without token budget cap.
+    Used for end-to-end efficiency, latency, and distraction analysis (answering Reviewer rTKQ W5).
+    """
+    selected = [(r, 1.0) for r in resources]
+    total_tokens = sum(r.token_cost for r in resources)
+    return StateComposer().compose(selected, task.query, budget=total_tokens)
+
+
+
 def memory_augmented_rag(task: Task, resources: List[Resource], budget: int) -> CompiledState:
     """Baseline B2: Retrieves from KNOWLEDGE + EXPERIENCE pools using semantic relevance."""
     candidates = [r for r in resources if r.resource_type in ("knowledge", "experience")]

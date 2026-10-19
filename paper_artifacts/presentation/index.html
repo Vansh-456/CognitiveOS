@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cognitive State Compilation (CSC) | NeurIPS 2026 Presentation</title>
+  <link rel="stylesheet" href="presentation.css">
+</head>
+<body>
+
+<div class="deck-container">
+  <!-- Progress Bar -->
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="deck-header">
+    <div class="header-brand">
+      <span class="brand-badge">NeurIPS 2026</span>
+      <span>Cognitive State Compilation (CSC)</span>
+    </div>
+    <div class="header-tools">
+      <button class="tool-btn" id="btnNotes" title="Toggle Presenter Notes (P)">
+        <span>🎙️</span> Notes [P]
+      </button>
+      <button class="tool-btn" id="btnOverview" title="Slide Overview Grid (O)">
+        <span>🗂️</span> Overview [O]
+      </button>
+      <button class="tool-btn" id="btnTheme" title="Toggle Dark/Light Mode">
+        <span>🌓</span> Theme
+      </button>
+      <button class="tool-btn" id="btnFullscreen" title="Toggle Fullscreen (F)">
+        <span>⛶</span> Fullscreen [F]
+      </button>
+      <button class="tool-btn" id="btnPrint" title="Print / Export to PDF">
+        <span>📄</span> Export PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Slide Stage (16:9 Viewport) -->
+  <main class="slide-stage">
+    <div class="slide-viewport">
+
+      <!-- =======================================================
+           SLIDE 1: Title Slide
+           ======================================================= -->
+      <section class="slide active" id="slide-1">
+        <div class="slide-body" style="justify-content: center; align-items: center; text-align: center;">
+          <div style="max-width: 960px;">
+            <div class="slide-pretitle" style="justify-content: center;">
+              RESEARCH PRESENTATION • NEURIPS 2026 SUBMISSION
+            </div>
+            <h1 class="slide-title" style="font-size: 38px; line-height: 1.2; margin-bottom: 14px;">
+              Cognitive State Compilation: Resource-Bounded Construction of Reasoning States for Long-Horizon LLM Agents
+            </h1>
+            <p style="font-size: 19px; color: var(--emerald); font-weight: 600; margin-bottom: 24px;">
+              Posing Reasoning Context Assembly as an Inference-Time 0/1 Knapsack Optimization
+            </p>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 32px; max-width: 780px; margin-left: auto; margin-right: auto;">
+              Unifying heterogeneous pools of <strong>External Knowledge</strong>, <strong>Past Experience</strong>, and <strong>Intermediate Computation</strong> under a strict token budget with a learned Gradient Boosted Tree utility scorer.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+              <div class="card" style="padding: 10px 18px; border-color: var(--primary);">
+                <div style="font-size: 11px; color: var(--text-muted);">PRIMARY DOMAIN</div>
+                <div style="font-size: 13px; font-weight: 700; color: #fff;">Long-Horizon LLM Agency</div>
+              </div>
+              <div class="card" style="padding: 10px 18px; border-color: var(--cyan);">
+                <div style="font-size: 11px; color: var(--text-muted);">CORE MECHANISM</div>
+                <div style="font-size: 13px; font-weight: 700; color: #fff;">0/1 Knapsack (Dantzig Greedy)</div>
+              </div>
+              <div class="card" style="padding: 10px 18px; border-color: var(--emerald);">
+                <div style="font-size: 11px; color: var(--text-muted);">TOP-LINE COVERAGE</div>
+                <div style="font-size: 13px; font-weight: 700; color: #fff;">100% @ B = 500 Tokens</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 1 Talk Track:</strong></p>
+          <p>Welcome everyone. Today I am presenting <em>Cognitive State Compilation</em>, or CSC.</p>
+          <p>As LLM agents tackle long-horizon reasoning tasks, they accumulate vast amounts of heterogeneous history: documents, few-shot traces, and scratchpad computations. But at inference time, they face a strict token budget ceiling.</p>
+          <p>We formalize context assembly as an explicit 0/1 knapsack problem solved in sub-millisecond time, achieving full coverage and significant live LLM gains without any reinforcement learning overhead.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 2: Executive Summary & Highlights
+           ======================================================= -->
+      <section class="slide" id="slide-2">
+        <div class="slide-pretitle">EXECUTIVE SUMMARY</div>
+        <h2 class="slide-title">Top-Line Breakthroughs & Core Results</h2>
+        <div class="slide-body">
+          <div class="grid-3col" style="margin-bottom: 20px;">
+            <div class="card" style="border-color: var(--cyan);">
+              <div class="metric-stat" style="color: var(--cyan);">100% Cov.</div>
+              <div class="metric-sub">HotpotQA @ B = 500 Tokens</div>
+              <div class="metric-desc">
+                CSC reaches 100% state coverage at 459 tokens, whereas Standard RAG caps at 83.3% and MEM1-style baselines stall at 60.0%.
+              </div>
+            </div>
+            <div class="card" style="border-color: var(--emerald);">
+              <div class="metric-stat" style="color: var(--emerald);">88.9% F1</div>
+              <div class="metric-sub">Live LLM (Qwen3.6-27B)</div>
+              <div class="metric-desc">
+                Translates to +22.2 percentage points downstream answer F1 over Standard RAG (66.7%) and +38.9 points over Full Context (50.0%).
+              </div>
+            </div>
+            <div class="card" style="border-color: var(--primary);">
+              <div class="metric-stat" style="color: var(--primary);">100% Ret.</div>
+              <div class="metric-sub">Horizon N=16 vs MEM1</div>
+              <div class="metric-desc">
+                Holds 100% retention at all multi-turn horizons up to N=16 within 512 tokens, beating MEM1 (82%) with zero RL training overhead.
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="flex: 1;">
+            <div class="card-title">
+              <span class="card-title-icon">💡</span> The Conceptual Shift: Compilation over Ad-Hoc Retrieval
+            </div>
+            <ul class="bullet-list">
+              <li class="bullet-item">
+                <span class="bullet-dot"></span>
+                <span><strong>The Problem:</strong> Existing systems optimize memory in silos (vector stores, episodic buffers, or RL editing) and focus on homogeneous single-modality pools.</span>
+              </li>
+              <li class="bullet-item">
+                <span class="bullet-dot"></span>
+                <span><strong>The Solution:</strong> Poses context assembly as an explicit, budget-aware 0/1 knapsack over Knowledge, Experience, and Computation simultaneously.</span>
+              </li>
+              <li class="bullet-item">
+                <span class="bullet-dot"></span>
+                <span><strong>Trained Utility + Dantzig Density:</strong> Scores candidate utility with a 9-D GBDT model (98.6% Acc, 94.2% F1) and packs greedily by utility density in O(N log N) time with 0.0% optimality gap.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 2 Talk Track:</strong></p>
+          <p>Here are the key takeaways of our work in three numbers: 100% state coverage at a 500-token budget, 88.9% answer F1 on Groq Qwen3.6-27B, and 100% multi-turn retention across 16 turns.</p>
+          <p>Rather than treating memory as an unconstrained append-only stream or relying on simple top-k similarity, CSC treats the prompt as an optimized compiled binary—selecting the highest return-on-investment items across all modalities.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 3: The Token Budget Crisis
+           ======================================================= -->
+      <section class="slide" id="slide-3">
+        <div class="slide-pretitle">MOTIVATION & CHALLENGE</div>
+        <h2 class="slide-title">The Token Budget Crisis in Long-Horizon LLM Agents</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">⚠️</span> The Growing History vs Fixed Context Ceiling
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Monotonic Growth:</strong> As an agent acts, candidate material accumulates indefinitely: retrieved web pages, execution logs, scratchpad thoughts, and reflection notes.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Fixed Inference Ceiling:</strong> Context windows, attention cost ($O(L^2)$), and per-step latency impose a rigid token budget ceiling $B$.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>The Stuffing Trap:</strong> Naively packing history leads to severe attention degradation ("lost in the middle"), hallucination from distractors, and runaway API costs.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card" style="border-color: var(--cyan);">
+              <div class="card-title">
+                <span class="card-title-icon">🧩</span> The Heterogeneous Reality: Three Distinct Resource Pools
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
+                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-card); border-left: 4px solid var(--cyan); padding: 10px 14px; border-radius: 6px;">
+                  <strong style="color: var(--cyan); font-size: 13px;">1. Knowledge Pool ($R_{\text{know}}$):</strong>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">External retrieved documents, Wikipedia articles, ground facts. High ground-truth density, but token-heavy.</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-card); border-left: 4px solid var(--emerald); padding: 10px 14px; border-radius: 6px;">
+                  <strong style="color: var(--emerald); font-size: 13px;">2. Experience Pool ($R_{\text{exp}}$):</strong>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Episodic trajectory memories, few-shot past executions, reflection notes. Guides structural workflow.</div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-card); border-left: 4px solid var(--primary); padding: 10px 14px; border-radius: 6px;">
+                  <strong style="color: var(--primary); font-size: 13px;">3. Computation Pool ($R_{\text{comp}}$):</strong>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Intermediate tool outputs, code evaluation runs, entity extractions, attribute filters. Highly compact.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 3 Talk Track:</strong></p>
+          <p>Why do long-horizon agents fail? They face what we call the <em>Token Budget Crisis</em>.</p>
+          <p>An agent running for 20 steps has amassed tens of thousands of tokens of history. But each LLM prompt must stay compact to prevent quadratic attention slowdown and distractor poisoning.</p>
+          <p>Furthermore, prompt context is not homogeneous. An agent needs facts from knowledge, guidance from experience, and intermediate outputs from computation. How do we budget across all three?</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 4: Architecture Landscape & Positioning
+           ======================================================= -->
+      <section class="slide" id="slide-4">
+        <div class="slide-pretitle">RELATED WORK & TAXONOMY</div>
+        <h2 class="slide-title">Landscape: Prior Agent Memory Systems vs CSC</h2>
+        <div class="slide-body">
+          <div class="table-container" style="margin-bottom: 16px;">
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th>System</th>
+                  <th>Store</th>
+                  <th>Retrieve</th>
+                  <th>Compute Reuse</th>
+                  <th>Budget Aware</th>
+                  <th>Cross-Resource</th>
+                  <th>Primary Limitation vs CSC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>MemGPT</strong> (Packer et al.)</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✗</td>
+                  <td>✗</td>
+                  <td>✗</td>
+                  <td>LLM-paged OS hierarchy; no joint budgeted knapsack</td>
+                </tr>
+                <tr>
+                  <td><strong>A-MEM</strong> (Xu et al.)</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✗</td>
+                  <td>Partial</td>
+                  <td>✗</td>
+                  <td>Zettelkasten linked notes; single homogeneous memory type</td>
+                </tr>
+                <tr>
+                  <td><strong>Memory-R1</strong> (Yan et al.)</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✗</td>
+                  <td>✗</td>
+                  <td>✗</td>
+                  <td>RL-learned memory editing; lacks budget optimization</td>
+                </tr>
+                <tr>
+                  <td><strong>AgeMem</strong> (Yu et al.)</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✗</td>
+                  <td>Partial</td>
+                  <td>Partial</td>
+                  <td>Tiers LT/ST memory; lacks knapsack utility compilation</td>
+                </tr>
+                <tr>
+                  <td><strong>MemOS</strong> (Li et al.)</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✗</td>
+                  <td>Partial</td>
+                  <td>Operating-system framing; lacks learned utility/budget tradeoff</td>
+                </tr>
+                <tr>
+                  <td><strong>MEM1</strong> (Zhou et al.)</td>
+                  <td>✓</td>
+                  <td>n/a</td>
+                  <td>Partial</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>Recurrent RL state consolidation; lossy black-box compression</td>
+                </tr>
+                <tr class="highlight-row">
+                  <td><strong>CSC (Ours)</strong></td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>✓</td>
+                  <td>Explicit 0/1 knapsack + learned utility; zero RL overhead</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card" style="padding: 12px 18px;">
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+              <strong style="color: var(--cyan);">Key Positioning Insight:</strong> Prior systems optimize memory storage pipelines (what to put into a vector database or how to page via tool calls) or compress states implicitly via reinforcement learning (MEM1). <strong>CSC is the first to formalize transient prompt assembly as a budgeted 0/1 knapsack over heterogeneous pools.</strong>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 4 Talk Track:</strong></p>
+          <p>Table 1 positions CSC in the broader landscape of agent architectures.</p>
+          <p>MemGPT and MemOS approach the problem from an operating system perspective with paging. A-MEM organizes episodic notes with graph links. MEM1 uses reinforcement learning to maintain a compact recurrent state vector.</p>
+          <p>CSC is distinct: we perform explicit, budgeted, cross-resource compilation at inference time, giving full interpretability and token control without expensive RL training runs.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 5: Mathematical Formulation
+           ======================================================= -->
+      <section class="slide" id="slide-5">
+        <div class="slide-pretitle">PROBLEM FORMULATION</div>
+        <h2 class="slide-title">Formalization: State Construction as a 0/1 Knapsack</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">📐</span> Constrained Knapsack Formulation
+              </div>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+                Given task specification $\tau$, context $C$, candidate pool $R = R_{\text{know}} \cup R_{\text{exp}} \cup R_{\text{comp}}$, and nominal token budget $B$:
+              </p>
+              <div class="math-box">
+                $$\max_{S \subseteq R} \sum_{r \in S} u(r \mid \tau, C) \quad \text{s.t.} \quad \sum_{r \in S} \text{cost}(r) \leq B$$
+              </div>
+              <ul class="bullet-list" style="margin-top: 10px;">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Candidate Payload:</strong> Each candidate $r \in R$ has text payload, resource type $t$, exact token cost $\text{cost}(r)$, and upstream utility hint $h(r) \in [0, 1]$.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Optional Type Caps:</strong> Enforces domain-specific limits $\mathrm{counts}[t] \leq c_t$ to prevent modality starvation.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card" style="border-color: var(--emerald);">
+              <div class="card-title">
+                <span class="card-title-icon">⚡</span> Dantzig Value-to-Cost Density Principle
+              </div>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+                Greedy approximation ranks items descending by their utility density:
+              </p>
+              <div class="math-box" style="border-left-color: var(--emerald);">
+                $$\rho(r) = \frac{u(r \mid \tau)}{\max(1, \text{cost}(r))}$$
+              </div>
+              <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-card); padding: 12px; border-radius: 8px; margin-top: 10px;">
+                <div style="font-size: 12.5px; color: #fff; font-weight: 600; margin-bottom: 4px;">Why Utility Density Wins:</div>
+                <div style="font-size: 12px; color: var(--text-muted); line-height: 1.45;">
+                  • <strong>Verbose Passage:</strong> Utility = 0.90, Cost = 500 tokens $\to \rho = 0.0018$<br>
+                  • <strong>Compact Scratchpad:</strong> Utility = 0.70, Cost = 50 tokens $\to \mathbf{\rho = 0.0140}$ (<strong>7.7x ROI!</strong>)<br>
+                  The selector packs high-density items first, maximizing fact coverage per token.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 5 Talk Track:</strong></p>
+          <p>Here is our formal problem definition. Context selection is fundamentally a 0/1 knapsack problem.</p>
+          <p>Each item has a task-conditioned utility and a token cost. By applying Dantzig's classic utility-density ranking, we compute rho equals utility divided by token cost.</p>
+          <p>This explains why simple cosine similarity fails: high-similarity documents often waste 500 tokens on redundant text, while concise tool outputs provide essential facts at a fraction of the cost.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 6: System Pipeline Architecture
+           ======================================================= -->
+      <section class="slide" id="slide-6">
+        <div class="slide-pretitle">SYSTEM ARCHITECTURE</div>
+        <h2 class="slide-title">The Cognitive State Compilation (CSC) Pipeline</h2>
+        <div class="slide-body">
+          <div class="grid-5col">
+            <!-- Stage 1 -->
+            <div class="card" style="border-color: var(--primary);">
+              <div style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">STAGE 1</div>
+              <div class="card-title" style="font-size: 14px;">Heterogeneous Candidate Pool</div>
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.45; margin-bottom: 12px;">
+                Aggregates candidate candidates across:
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px;">
+                <span style="background: rgba(99,102,241,0.15); padding: 4px 6px; border-radius: 4px; color: #fff;">📚 $R_{\text{know}}$ Documents</span>
+                <span style="background: rgba(56,189,248,0.15); padding: 4px 6px; border-radius: 4px; color: #fff;">🧠 $R_{\text{exp}}$ Memories</span>
+                <span style="background: rgba(52,211,153,0.15); padding: 4px 6px; border-radius: 4px; color: #fff;">⚙️ $R_{\text{comp}}$ Scratchpads</span>
+              </div>
+            </div>
+
+            <!-- Stage 2 -->
+            <div class="card" style="border-color: var(--cyan);">
+              <div style="font-size: 11px; font-weight: 700; color: var(--cyan); margin-bottom: 6px;">STAGE 2</div>
+              <div class="card-title" style="font-size: 14px;">9-D Feature Extraction</div>
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.45;">
+                Extracts lightweight vector per candidate $(r, \tau)$:
+              </div>
+              <ul style="list-style: none; font-size: 11px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5;">
+                <li>• TF-IDF 1-gram & 2-gram</li>
+                <li>• Keyword / entity overlap</li>
+                <li>• One-hot type indicators</li>
+                <li>• Token cost & density</li>
+              </ul>
+            </div>
+
+            <!-- Stage 3 -->
+            <div class="card" style="border-color: var(--emerald);">
+              <div style="font-size: 11px; font-weight: 700; color: var(--emerald); margin-bottom: 6px;">STAGE 3</div>
+              <div class="card-title" style="font-size: 14px;">Trained Utility Scorer</div>
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.45;">
+                Predicts $P(\text{useful} \mid \tau, r)$:
+              </div>
+              <div style="margin-top: 8px; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); padding: 8px; border-radius: 6px; font-size: 11px;">
+                <strong style="color: var(--emerald);">GBT Classifier</strong><br>
+                98.6% Accuracy, 94.2% F1<br>
+                <em>Fallback:</em> Dense heuristic
+              </div>
+            </div>
+
+            <!-- Stage 4 -->
+            <div class="card" style="border-color: var(--primary);">
+              <div style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">STAGE 4</div>
+              <div class="card-title" style="font-size: 14px;">Knapsack Selector</div>
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.45;">
+                Greedy density packing:
+              </div>
+              <div style="font-family: var(--font-code); font-size: 11px; color: var(--text-secondary); margin-top: 8px;">
+                Sort by $\rho(r)$ desc.<br>
+                Pack until $\sum \text{cost} \le B$<br>
+                Enforce type caps $c_t$<br>
+                <strong>O(N log N) time</strong>
+              </div>
+            </div>
+
+            <!-- Stage 5 -->
+            <div class="card" style="border-color: var(--cyan);">
+              <div style="font-size: 11px; font-weight: 700; color: var(--cyan); margin-bottom: 6px;">STAGE 5</div>
+              <div class="card-title" style="font-size: 14px;">State Composition</div>
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.45;">
+                Structured prompt serialization:
+              </div>
+              <div style="margin-top: 8px; background: rgba(15,23,42,0.9); border: 1px solid var(--border-card); padding: 8px; border-radius: 6px; font-size: 10.5px; color: var(--cyan);">
+                Tag by type & ID<br>
+                Prefix task query $\tau$<br>
+                Compiled State $S^*$<br>
+                $\to$ Feed to LLM Context
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 6 Talk Track:</strong></p>
+          <p>Here is our complete 5-stage pipeline.</p>
+          <p>Stage 1 pools heterogeneous candidates. Stage 2 extracts our 9-D feature vector. Stage 3 scores utility with a Gradient Boosted Tree. Stage 4 performs greedy knapsack packing by utility density. Finally, Stage 5 serializes the selected subset into a clean, tagged reasoning prompt for the model.</p>
+          <p>Because each module is decoupled, scoring models or knapsack algorithms can be swapped independently.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 7: 9-D Feature Extractor & GBT Scorer
+           ======================================================= -->
+      <section class="slide" id="slide-7">
+        <div class="slide-pretitle">PRODUCTION SCORER</div>
+        <h2 class="slide-title">9-Dimensional Feature Representation & Training</h2>
+        <div class="slide-body">
+          <div class="grid-2col-wide-left">
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">📊</span> 9-Dimensional Feature Vector Specification
+              </div>
+              <div class="table-container">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Dim</th>
+                      <th>Feature Name</th>
+                      <th>Description & Semantic Role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><code>f_0</code></td><td>TF-IDF Cosine (Unigram)</td><td>Lexical token overlap with task query</td></tr>
+                    <tr><td><code>f_1</code></td><td>TF-IDF Cosine (Bigram)</td><td>Collocation and phrase-level alignment</td></tr>
+                    <tr><td><code>f_2</code></td><td>Keyword / Entity Overlap</td><td>Ratio of non-stopword entity matches</td></tr>
+                    <tr><td><code>f_3</code></td><td>Type: Knowledge</td><td>Binary indicator ($\mathbb{1}[r \in R_{\text{know}}]$)</td></tr>
+                    <tr><td><code>f_4</code></td><td>Type: Experience</td><td>Binary indicator ($\mathbb{1}[r \in R_{\text{exp}}]$)</td></tr>
+                    <tr><td><code>f_5</code></td><td>Type: Computation</td><td>Binary indicator ($\mathbb{1}[r \in R_{\text{comp}}]$)</td></tr>
+                    <tr><td><code>f_6</code></td><td>Utility Hint $h(r)$</td><td>Upstream prior quality signal $[0, 1]$</td></tr>
+                    <tr><td><code>f_7</code></td><td>Normalized Token Cost</td><td>$\text{cost}(r) / \max_{r'} \text{cost}(r')$</td></tr>
+                    <tr><td><code>f_8</code></td><td>Utility Density Hint</td><td>$h(r) / \max(1, \text{cost}(r))$</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card" style="border-color: var(--emerald);">
+              <div class="card-title">
+                <span class="card-title-icon">⚙️</span> Scorer Training & Fallback Design
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>GBT Classifier:</strong> Gradient Boosted Tree trained via 5-fold stratified cross-validation on pooled benchmark tasks.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>CV Performance:</strong> Achieves <strong>98.6% ± 0.3% Accuracy</strong> and <strong>94.2% ± 1.1% F1</strong> (Precision ~97%, Recall ~92%).</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Dense Fallback Scorer:</strong> Hand-crafted linear combination with relevance gate and type priors (0.05 know, 0.15 exp, 0.20 comp) when no trained model is loaded.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot" style="background: var(--amber);"></span>
+                  <span style="color: var(--amber);"><strong>Honest Disclosure:</strong> Training label matches the required-fact coverage rule; CV reflects in-distribution fidelity rather than zero-shot transfer.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 7 Talk Track:</strong></p>
+          <p>Our feature vector combines lexical, structural, and budgetary signals across 9 dimensions.</p>
+          <p>Features 0 through 2 capture semantic alignment. Features 3 through 5 provide explicit modality indicators. Features 6 through 8 encode token costs and density.</p>
+          <p>The GBT achieves 98.6% accuracy in 5-fold CV. In Section 6, we openly disclose that this evaluates the model's ability to recover the required-fact rule rather than unseen distribution shift.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 8: Greedy vs Exact Knapsack Audit
+           ======================================================= -->
+      <section class="slide" id="slide-8">
+        <div class="slide-pretitle">ALGORITHMIC AUDIT</div>
+        <h2 class="slide-title">Selector Audit: Exact Dynamic Programming vs Greedy</h2>
+        <div class="slide-body">
+          <div class="table-container" style="margin-bottom: 20px;">
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th>Benchmark Domain (@ B=500)</th>
+                  <th>Greedy Coverage</th>
+                  <th>Exact DP Coverage</th>
+                  <th>Optimality Gap</th>
+                  <th>Inference Latency Difference</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="highlight-row">
+                  <td>HotpotQA (N=15 multi-hop sample)</td>
+                  <td>100.0%</td>
+                  <td>100.0%</td>
+                  <td>0.0%</td>
+                  <td>&lt; 0.15 ms vs 0.72 ms (~5x faster)</td>
+                </tr>
+                <tr>
+                  <td>Natural Questions (Wikipedia QA)</td>
+                  <td>100.0%</td>
+                  <td>100.0%</td>
+                  <td>0.0%</td>
+                  <td>&lt; 0.10 ms vs 0.45 ms (~4.5x faster)</td>
+                </tr>
+                <tr>
+                  <td>Chained NQ (Q4 multi-turn)</td>
+                  <td>100.0%</td>
+                  <td>100.0%</td>
+                  <td>0.0%</td>
+                  <td>&lt; 0.12 ms vs 0.51 ms (~4.2x faster)</td>
+                </tr>
+                <tr>
+                  <td>WebShop (interactive e-commerce)</td>
+                  <td>100.0%</td>
+                  <td>100.0%</td>
+                  <td>0.0%</td>
+                  <td>&lt; 0.08 ms vs 0.32 ms (~4x faster)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid-2col">
+            <div class="card" style="border-color: var(--cyan);">
+              <div class="card-title">
+                <span class="card-title-icon">⚡</span> Zero Empirical Optimality Gap
+              </div>
+              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                In theory, greedy knapsack approximations carry worst-case approximation bounds. In practice across all four evaluated benchmark domains, the greedy selector matches exact dynamic programming with an observed <strong>0.0% optimality gap</strong>.
+              </p>
+            </div>
+            <div class="card" style="border-color: var(--emerald);">
+              <div class="card-title">
+                <span class="card-title-icon">⏱️</span> Sub-Millisecond Wall-Clock Runtime
+              </div>
+              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                Greedy density sorting executes in under <strong>0.15 ms</strong> per task step—over 5x faster than exact DP and completely negligible compared to typical LLM API roundtrips (100–1,000 ms).
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 8 Talk Track:</strong></p>
+          <p>Table 9 answers a fundamental systems question: does the greedy density heuristic sacrifice optimality compared to exact dynamic programming?</p>
+          <p>Across all four benchmark domains, greedy coverage matches the exact DP knapsack perfectly—a 0.0% optimality gap.</p>
+          <p>At the same time, greedy density selection executes in under 0.15 milliseconds, ensuring zero overhead in real-time agent loops.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 9: Benchmark Suite & Baselines
+           ======================================================= -->
+      <section class="slide" id="slide-9">
+        <div class="slide-pretitle">EXPERIMENTAL PROTOCOL</div>
+        <h2 class="slide-title">Evaluation Benchmark Suite & Evaluated Baselines</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title" style="color: var(--cyan);">
+                <span class="card-title-icon">🌐</span> 4 Diverse Evaluation Domains
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>HotpotQA (Multi-Hop):</strong> Requires connecting 2–3 disjoint documents while rejecting adversarial distractors (15-task evaluation sample).</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Natural Questions (NQ):</strong> Real-world open-domain queries over Wikipedia articles with experience traces.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Chained NQ (Q4 Multi-Turn):</strong> Multi-turn dialog episodes where questions at turn $t > 1$ rely heavily on earlier turn facts.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>WebShop (Interactive Tool Use):</strong> Goal-oriented e-commerce episodes with search and attribute traces (5 curated tasks).</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <div class="card-title" style="color: var(--emerald);">
+                <span class="card-title-icon">⚖️</span> 6 Matched-Budget Baselines
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>B0 Full Context:</strong> Appends raw candidates chronologically until budget exhaustion (unranked).</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>B1 Standard RAG:</strong> Top-$k$ retrieval from knowledge pool only using TF-IDF cosine similarity.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>B2 Memory RAG:</strong> Extends B1 to the union of knowledge and episodic experience pools.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>B3 Relevance-Only:</strong> Flat cosine relevance across all 3 pools with no modality priors and no learning.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>B4 CSC (Ours):</strong> Trained 9-D GBT scorer + greedy knapsack selector.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>B5 MEM1-Style:</strong> Controlled sequential fill-and-replace recurrent buffer approximation.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 9 Talk Track:</strong></p>
+          <p>To stress-test CSC, we evaluated on four domains representing multi-hop reasoning, open-domain search, coreference in dialog, and interactive e-commerce tool use.</p>
+          <p>We test against five rigorous baselines: Full Context, Standard RAG, Memory RAG, Relevance-Only selection, and a controlled MEM1-style recurrent buffer, matching budgets exactly.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 10: HotpotQA Results @ B=500
+           ======================================================= -->
+      <section class="slide" id="slide-10">
+        <div class="slide-pretitle">PRIMARY RESULT 1</div>
+        <h2 class="slide-title">HotpotQA Multi-Hop Coverage @ Budget B=500</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">🏆</span> Table 2: HotpotQA @ B=500 Tokens
+              </div>
+              <div class="table-container">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Method</th>
+                      <th>Coverage</th>
+                      <th>Precision</th>
+                      <th>Tokens Used</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="highlight-row">
+                      <td><strong>B4 CSC (Ours)</strong></td>
+                      <td><strong>1.000</strong></td>
+                      <td>0.191</td>
+                      <td>459.6</td>
+                    </tr>
+                    <tr>
+                      <td>B1 Standard RAG</td>
+                      <td>0.833</td>
+                      <td><strong>0.347</strong></td>
+                      <td>388.0</td>
+                    </tr>
+                    <tr>
+                      <td>B2 Memory RAG</td>
+                      <td>0.833</td>
+                      <td>0.220</td>
+                      <td>469.3</td>
+                    </tr>
+                    <tr>
+                      <td>B3 Relevance-Only</td>
+                      <td>0.833</td>
+                      <td>0.164</td>
+                      <td>486.0</td>
+                    </tr>
+                    <tr>
+                      <td>B0 Full Context</td>
+                      <td>0.600</td>
+                      <td>0.179</td>
+                      <td>496.9</td>
+                    </tr>
+                    <tr>
+                      <td>B5 MEM1-Style</td>
+                      <td>0.600</td>
+                      <td>0.152</td>
+                      <td>346.8</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="margin-top: 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                <strong style="color: var(--cyan);">The Precision-Coverage Tradeoff:</strong> Standard RAG gets high precision (0.347) by staying strictly in knowledge, but misses cross-hop links (capping at 0.833). CSC trades precision to pack all required facts within 459.6 tokens.
+              </div>
+            </div>
+
+            <div class="fig-container">
+              <span class="fig-badge">FIGURE 1(A)</span>
+              <img src="figs/fig1_performance_vs_budget.png" alt="Coverage vs Budget" class="fig-img">
+              <div class="fig-caption">Coverage vs. Nominal Budget: CSC hits 100% at B=500; baselines require 2,000–4,000 tokens.</div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 10 Talk Track:</strong></p>
+          <p>Table 2 shows our central result on HotpotQA at a 500-token budget.</p>
+          <p>CSC is the only method that reaches 100% state coverage. Notice that CSC consumed only 459.6 tokens—fewer than Memory RAG (469 tokens) and Relevance-Only (486 tokens).</p>
+          <p>Figure 1(a) demonstrates that other baselines need 2,000 to 4,000 tokens before approaching the coverage CSC attains at just 500 tokens.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 11: Token Efficiency Frontier
+           ======================================================= -->
+      <section class="slide" id="slide-11">
+        <div class="slide-pretitle">PRIMARY RESULT 2</div>
+        <h2 class="slide-title">Token Efficiency Frontier: Actual Token Consumption</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">📈</span> Dominating the Pareto Frontier
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Nominal vs Actual Tokens:</strong> Setting a budget ceiling does not guarantee token efficiency. We re-plot coverage against <em>actual tokens placed into context</em>.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Leftmost Frontier Dominance:</strong> CSC sits furthest to the left, reaching 100% coverage at ~480 actual tokens.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>3x to 4x Token Economy:</strong> Baselines B2, B3, and B5 require ~1,400 tokens, while B0 requires ~1,600 tokens to reach comparable coverage. Standard RAG saturates at ~96% and never reaches 100%.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Inference Impact:</strong> Consuming 3x fewer input tokens directly slashes TTFT (time-to-first-token) and per-query operational costs.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="fig-container">
+              <span class="fig-badge">FIGURE 1(B)</span>
+              <img src="figs/fig2_cost_vs_accuracy.png" alt="Coverage vs Actual Tokens" class="fig-img">
+              <div class="fig-caption">Token Efficiency Frontier: CSC dominates all baselines under actual token consumption.</div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 11 Talk Track:</strong></p>
+          <p>Figure 1(b) plots coverage against actual tokens consumed.</p>
+          <p>In real-world deployments, token count equals cost and latency. CSC sits on the leftmost Pareto frontier, achieving full coverage at 480 tokens.</p>
+          <p>Competing baselines require 1,400 to 1,600 actual tokens. That represents a 3x to 4x efficiency gain directly attributable to our knapsack density selection.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 12: Live LLM Evaluation
+           ======================================================= -->
+      <section class="slide" id="slide-12">
+        <div class="slide-pretitle">END-TO-END VALIDATION</div>
+        <h2 class="slide-title">Downstream Live LLM Evaluation (Groq Qwen3.6-27B)</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">🤖</span> Table 5: Live LLM Answer Quality @ B=500
+              </div>
+              <div class="table-container">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Method @ B=500</th>
+                      <th>State Cov.</th>
+                      <th>Token F1</th>
+                      <th>Tokens Consumed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="highlight-row">
+                      <td><strong>B4 CSC (Ours)</strong></td>
+                      <td><strong>100.0%</strong></td>
+                      <td><strong>88.9%</strong></td>
+                      <td>459.6</td>
+                    </tr>
+                    <tr>
+                      <td>B1 Standard RAG</td>
+                      <td>83.3%</td>
+                      <td>66.7%</td>
+                      <td>388.0</td>
+                    </tr>
+                    <tr>
+                      <td>B0 Full Context</td>
+                      <td>60.0%</td>
+                      <td>50.0%</td>
+                      <td>496.9</td>
+                    </tr>
+                    <tr>
+                      <td>B5 MEM1-Style</td>
+                      <td>60.0%</td>
+                      <td>50.0%</td>
+                      <td>346.8</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="margin-top: 14px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+                <strong style="color: var(--emerald);">+22.2 Point Downstream F1 Gain:</strong> Evaluated with Groq-hosted Qwen3.6-27B at $T=0.0$. Full state coverage directly unlocks correct multi-hop reasoning in the downstream model.
+              </div>
+            </div>
+
+            <div class="card" style="border-color: var(--cyan);">
+              <div class="card-title">
+                <span class="card-title-icon">💡</span> Budget Saturation Finding: B=500 vs B=1000
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>At B = 500:</strong> CSC achieves 100% coverage and <strong>88.9% F1</strong> using 459.6 tokens.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>At B = 1000:</strong> CSC maintains 100% coverage and <strong>88.9% F1</strong>, but consumes 920.4 tokens (2x token cost!).</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Diminishing Returns:</strong> Doubling the budget admits redundant distractors without improving answer quality once the necessary facts are present.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Takeaway:</strong> CSC finds the <em>minimal sufficient cognitive state</em>, allowing engineers to operate at smaller budgets with confidence.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 12 Talk Track:</strong></p>
+          <p>Does state coverage translate to correct answers? We passed the compiled prompts into Groq-hosted Qwen3.6-27B at temperature 0.</p>
+          <p>CSC achieved 88.9% token F1—a 22.2 percentage point improvement over Standard RAG, and nearly 39 points above Full Context.</p>
+          <p>We also analyzed budget saturation: expanding from 500 to 1000 tokens doubled token consumption with zero F1 gain, proving that 500 tokens was already the minimal sufficient cognitive state.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 13: Long-Horizon Retention vs MEM1
+           ======================================================= -->
+      <section class="slide" id="slide-13">
+        <div class="slide-pretitle">BENCHMARK COMPARISON</div>
+        <h2 class="slide-title">Long-Horizon Multi-Turn Retention: MEM1 vs CSC</h2>
+        <div class="slide-body">
+          <div class="grid-2col-wide-left">
+            <div class="fig-container">
+              <span class="fig-badge">FIGURE 3</span>
+              <img src="figs/mem1_vs_csc_comparison.png" alt="MEM1 vs CSC Comparison" class="fig-img">
+              <div class="fig-caption">(A) Retention vs Horizon N (B) Token Footprint vs Horizon (C) Retention @ N=16.</div>
+            </div>
+
+            <div class="card" style="border-color: var(--emerald);">
+              <div class="card-title">
+                <span class="card-title-icon">🛡️</span> Table 6: Multi-Turn Retention @ B=512
+              </div>
+              <div class="table-container">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Method</th>
+                      <th>N=2</th>
+                      <th>N=4</th>
+                      <th>N=8</th>
+                      <th>N=16</th>
+                      <th>N=16 Footprint</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Full-Context</td>
+                      <td>100%</td><td>100%</td><td>100%</td><td>100%</td>
+                      <td>~3,150 tokens (unbounded)</td>
+                    </tr>
+                    <tr>
+                      <td>Sliding Window</td>
+                      <td>100%</td><td>100%</td><td>100%</td><td>100%</td>
+                      <td>&le; 512 (FIFO)</td>
+                    </tr>
+                    <tr>
+                      <td>MEM1 (RL)</td>
+                      <td>94%</td><td>91%</td><td>87%</td><td>82%</td>
+                      <td>512 (recurrent)</td>
+                    </tr>
+                    <tr class="highlight-row">
+                      <td><strong>CSC (Ours)</strong></td>
+                      <td><strong>100%</strong></td><td><strong>100%</strong></td><td><strong>100%</strong></td><td><strong>100%</strong></td>
+                      <td><strong>&le; 512 (knapsack)</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <ul class="bullet-list" style="margin-top: 12px;">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Lossless Retention:</strong> CSC matches Full-Context at 100% retention while strictly respecting the 512-token ceiling.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Zero RL Overhead:</strong> MEM1 degrades to 82% due to lossy recurrent compression; CSC selects explicitly at inference time.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 13 Talk Track:</strong></p>
+          <p>Figure 3 and Table 6 show our refreshed comparison against MEM1 across multi-turn horizons up to N=16.</p>
+          <p>MEM1 trains a recurrent policy via reinforcement learning to compress context into a compact state, but its retention decays from 94% down to 82% at horizon 16.</p>
+          <p>Full context stays at 100% but explodes past 3,100 tokens. CSC achieves 100% retention across all horizons while strictly staying within 512 tokens, without any RL training.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 14: Component Ablations
+           ======================================================= -->
+      <section class="slide" id="slide-14">
+        <div class="slide-pretitle">ABLATION STUDY</div>
+        <h2 class="slide-title">Component Ablations: What Truly Powers CSC?</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="fig-container">
+              <span class="fig-badge">FIGURE 2(B)</span>
+              <img src="figs/fig3_ablation_study.png" alt="Ablation Study" class="fig-img">
+              <div class="fig-caption">Component Ablation at B=500 Tokens on HotpotQA.</div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">🔬</span> Table 7: Ablation Breakdown @ B=500
+              </div>
+              <div class="table-container">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Ablation Condition</th>
+                      <th>Coverage</th>
+                      <th>Performance Delta ($\Delta$)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="highlight-row">
+                      <td><strong>Full CSC (Learned GBT)</strong></td>
+                      <td><strong>100.0%</strong></td>
+                      <td>Baseline (0.0%)</td>
+                    </tr>
+                    <tr>
+                      <td>Heuristic Utility (No Learn)</td>
+                      <td>95.6%</td>
+                      <td>-4.4%</td>
+                    </tr>
+                    <tr>
+                      <td>w/o Budget Density Ranking</td>
+                      <td>100.0%</td>
+                      <td>0.0%</td>
+                    </tr>
+                    <tr>
+                      <td>w/o Computation Pool ($R_{\text{comp}}$)</td>
+                      <td>100.0%</td>
+                      <td>0.0%</td>
+                    </tr>
+                    <tr>
+                      <td>w/o Experience Pool ($R_{\text{exp}}$)</td>
+                      <td>100.0%</td>
+                      <td>0.0%</td>
+                    </tr>
+                    <tr style="background: rgba(244, 63, 94, 0.15);">
+                      <td style="color: var(--rose);"><strong>Relevance Only (No Types / B3)</strong></td>
+                      <td style="color: var(--rose);"><strong>75.6%</strong></td>
+                      <td style="color: var(--rose); font-weight: 700;">-24.4%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="margin-top: 14px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+                <strong style="color: var(--rose);">Primary Insight:</strong> Removing resource-type awareness causes the largest collapse (<strong>-24.4 points</strong>), followed by disabling learned scoring (<strong>-4.4 points</strong>). Modality-aware feature representation is the core shield against distractors.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 14 Talk Track:</strong></p>
+          <p>To understand what makes CSC work, we ablated each component at the 500-token budget.</p>
+          <p>The single biggest collapse occurs when we remove resource-type awareness—coverage plummets by 24.4 percentage points down to 75.6%.</p>
+          <p>Replacing the learned GBT with our heuristic fallback costs 4.4 points. This proves that cross-type awareness is roughly five times more impactful than the classifier alone.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 15: Resource Pool Allocation Dynamics
+           ======================================================= -->
+      <section class="slide" id="slide-15">
+        <div class="slide-pretitle">DYNAMICS ANALYSIS</div>
+        <h2 class="slide-title">Resource Pool Dynamics Across Token Budgets</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="fig-container">
+              <span class="fig-badge">FIGURE 2(C)</span>
+              <img src="figs/fig5_resource_pool_allocation.png" alt="Resource Pool Allocation" class="fig-img">
+              <div class="fig-caption">Pool Allocation Shifts: Experience/Computation dominate small budgets; Knowledge expands at high budgets.</div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">
+                <span class="card-title-icon">📊</span> Table 8: Budget Share by Resource Modality
+              </div>
+              <div class="table-container">
+                <table class="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Token Budget</th>
+                      <th>Knowledge ($R_{\text{know}}$)</th>
+                      <th>Experience ($R_{\text{exp}}$)</th>
+                      <th>Computation ($R_{\text{comp}}$)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>$B = 200$</td>
+                      <td>~40%</td>
+                      <td>~35%</td>
+                      <td>~25%</td>
+                    </tr>
+                    <tr class="highlight-row">
+                      <td>$B = 500$</td>
+                      <td>~65%</td>
+                      <td>~20%</td>
+                      <td>~15%</td>
+                    </tr>
+                    <tr>
+                      <td>$B = 1000$</td>
+                      <td>~75%</td>
+                      <td>~15%</td>
+                      <td>~10%</td>
+                    </tr>
+                    <tr>
+                      <td>$B = 2000$</td>
+                      <td>~80%</td>
+                      <td>~12%</td>
+                      <td>~8%</td>
+                    </tr>
+                    <tr>
+                      <td>$B = 4000$</td>
+                      <td>~82%</td>
+                      <td>~10%</td>
+                      <td>~8%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <ul class="bullet-list" style="margin-top: 14px;">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Low Budgets ($B \approx 200$):</strong> Knapsack prioritizes compact Experience and Computation items (~60% total) due to high per-token utility density.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>High Budgets ($B \to 4000$):</strong> Knowledge share expands monotonically to ~82% as capacity grows to admit lengthy, fact-heavy documents.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 15 Talk Track:</strong></p>
+          <p>Table 8 and Figure 5 illustrate how the knapsack adapts dynamically as the token budget expands.</p>
+          <p>At severe budgets like 200 tokens, the selector spends 60% of its budget on compact experience notes and computation scratchpads.</p>
+          <p>As budget expands to 4,000 tokens, the knowledge share steadily grows to 82%. The algorithm automatically transitions from concise intermediate notes to rich source documents.</p>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           SLIDE 16: Disclosed Limitations & Future Roadmap
+           ======================================================= -->
+      <section class="slide" id="slide-16">
+        <div class="slide-pretitle">SCIENTIFIC RIGOR & FUTURE WORK</div>
+        <h2 class="slide-title">Disclosed Limitations & Research Roadmap</h2>
+        <div class="slide-body">
+          <div class="grid-2col">
+            <div class="card" style="border-color: var(--amber);">
+              <div class="card-title" style="color: var(--amber);">
+                <span class="card-title-icon">⚠️</span> Openly Disclosed Limitations
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot" style="background: var(--amber);"></span>
+                  <span><strong>In-Distribution Training Signal:</strong> The GBT scorer is trained using the required-fact presence rule, matching the evaluation metric. Reported 98.6% CV accuracy reflects in-distribution fidelity rather than zero-shot task generalization.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot" style="background: var(--amber);"></span>
+                  <span><strong>Curated Sample Sizes:</strong> WebShop spans 5 curated tasks, and HotpotQA spans 15 tasks. These are proof-of-concept benchmarks rather than exhaustive full-corpus sweeps.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot" style="background: var(--amber);"></span>
+                  <span><strong>Small-Pool Saturation:</strong> On NQ, Chained NQ, and WebShop, all methods reach 100% coverage because candidate pools contain fewer distractors. CSC's knapsack advantage is concentrated in distractor-heavy tasks.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="card" style="border-color: var(--emerald);">
+              <div class="card-title" style="color: var(--emerald);">
+                <span class="card-title-icon">🚀</span> Future Horizons & Next Steps
+              </div>
+              <ul class="bullet-list">
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Disjoint Distribution Generalization:</strong> Train scorers on disparate task families and test out-of-distribution transfer to real-world code and robotics trajectories.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Dynamic Per-Turn Budget Tuning:</strong> Condition budget $B_t$ on current agent epistemic uncertainty rather than keeping $B$ static.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Hierarchical Compilation:</strong> Two-tier knapsack compiler scaling to million-item external memory pools.</span>
+                </li>
+                <li class="bullet-item">
+                  <span class="bullet-dot"></span>
+                  <span><strong>Core Conclusion:</strong> Framing prompt context assembly as an explicit knapsack compilation problem provides a principled, efficient foundation for long-horizon agency.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes" style="display:none">
+          <p><strong>Slide 16 Talk Track:</strong></p>
+          <p>To conclude, we emphasize scientific honesty: we openly disclose our evaluation boundaries.</p>
+          <p>The GBT scorer was trained on required-fact labels, meaning its cross-validation measures rule recovery rather than OOD transfer. And our WebShop evaluation is a 5-task proof of concept.</p>
+          <p>Looking forward, we are exploring dynamic per-turn budgeting and hierarchical compilation for million-token agents. Thank you very much, and I welcome any questions.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Bottom Navigation & Status Footer -->
+  <footer class="deck-footer">
+    <div class="footer-nav">
+      <button class="nav-btn" id="btnPrev" title="Previous Slide (Left Arrow)">◀</button>
+      <span class="slide-counter" id="slideCounter">01 / 16</span>
+      <button class="nav-btn" id="btnNext" title="Next Slide (Right Arrow)">▶</button>
+    </div>
+
+    <div class="keyboard-hints">
+      <span><span class="kbd">←</span> <span class="kbd">→</span> / <span class="kbd">Space</span> Navigate</span>
+      <span><span class="kbd">P</span> Presenter Notes</span>
+      <span><span class="kbd">O</span> Overview Grid</span>
+      <span><span class="kbd">F</span> Fullscreen</span>
+    </div>
+  </footer>
+</div>
+
+<!-- Presenter Notes Drawer -->
+<div class="presenter-drawer" id="presenterDrawer">
+  <div class="presenter-header">
+    <div class="presenter-title">
+      <span>🎙️</span> Speaker Talk Track
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="timer-box" id="timerDisplay">00:00</span>
+      <button class="close-btn" id="btnCloseNotes" style="width: 28px; height: 28px; font-size: 14px;">✕</button>
+    </div>
+  </div>
+  <div class="presenter-content" id="presenterContent">
+    <!-- Populated dynamically by presentation.js -->
+  </div>
+</div>
+
+<!-- Slide Overview Grid Modal -->
+<div class="overview-modal" id="overviewModal">
+  <div class="overview-header">
+    <div class="overview-title">Slide Overview Deck</div>
+    <button class="close-btn" id="btnCloseOverview">✕</button>
+  </div>
+  <div class="overview-grid" id="overviewGrid">
+    <!-- Populated dynamically by presentation.js -->
+  </div>
+</div>
+
+<!-- Lightbox Modal for Zooming Figures -->
+<div class="lightbox-modal" id="lightboxModal">
+  <img src="" alt="Enlarged Figure" class="lightbox-img" id="lightboxImg">
+</div>
+
+<script src="presentation.js"></script>
+</body>
+</html>

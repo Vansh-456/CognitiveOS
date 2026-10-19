@@ -1,0 +1,17 @@
+% Table 5: Knapsack Optimality Gap in Objective Utility (Eq. 1)
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Budget} & \textbf{Exact DP} $U(S^*)$ & \textbf{Greedy} $U(S)$ & \textbf{Abs. Gap} & \textbf{Optimality (\%)} & \textbf{Exact Cov.} & \textbf{Greedy Cov.} \\
+\midrule
+B=100 & 0.6278 & 0.6073 & 0.0205 & 96.74\% & 36.0\% & 33.3\% \\
+B=200 & 1.1177 & 1.1148 & 0.0029 & 99.74\% & 82.7\% & 78.7\% \\
+B=300 & 1.2659 & 1.2586 & 0.0073 & 99.42\% & 89.3\% & 92.0\% \\
+B=500 & 1.4121 & 1.4103 & 0.0019 & 99.87\% & 93.3\% & 96.0\% \\
+\bottomrule
+\end{tabular}
+\caption{Exact 0/1 DP vs.\ Dantzig greedy utility-density approximation in summed objective utility $U(S) = \sum_{i \in S} u_i$ across constrained budgets. Greedy achieves $\ge 96.7\%$ of optimal utility at a fraction of the computational complexity.}
+\label{tab:knapsack_optimality_gap}
+\end{table}

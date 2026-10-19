@@ -137,16 +137,25 @@ def load_webshop_benchmark(
     return _load_json_benchmark(Path(file_path), limit=limit)
 
 
+def load_cross_resource_benchmark(
+    file_path: str = "data/cross_resource_benchmark.json",
+    limit: Optional[int] = None,
+) -> Tuple[List[Task], Dict[str, List[Resource]]]:
+    """Loads the dedicated heterogeneous cross-resource benchmark."""
+    return _load_json_benchmark(Path(file_path), limit=limit)
+
+
 def load_benchmark(
     name: str = "hotpotqa",
     limit: Optional[int] = None,
 ) -> Tuple[List[Task], Dict[str, List[Resource]]]:
     """
-    Unified router for loading any of the 4 benchmark datasets:
+    Unified router for loading benchmark datasets:
     - 'hotpotqa' (or 'mem1')
     - 'nq'
     - 'nq_chained'
     - 'webshop'
+    - 'cross_resource' (heterogeneous multi-objective benchmark)
     - 'toy' (fallback)
     """
     name_clean = name.lower().strip()
@@ -158,8 +167,11 @@ def load_benchmark(
         return load_nq_chained_benchmark(limit=limit)
     elif name_clean in ("webshop", "shop"):
         return load_webshop_benchmark(limit=limit)
+    elif name_clean in ("cross_resource", "heterogeneous", "cr"):
+        return load_cross_resource_benchmark(limit=limit)
     elif name_clean == "toy":
         tasks, res = build_demo_dataset()
         return (tasks[:limit], res) if limit else (tasks, res)
     else:
-        raise ValueError(f"Unknown benchmark '{name}'. Choose from: 'hotpotqa', 'nq', 'nq_chained', 'webshop', 'toy'.")
+        raise ValueError(f"Unknown benchmark '{name}'. Choose from: 'hotpotqa', 'nq', 'nq_chained', 'webshop', 'cross_resource', 'toy'.")
+

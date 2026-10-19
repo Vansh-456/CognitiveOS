@@ -29,7 +29,11 @@ class CompiledState:
     coverage: float = 0.0
     relevant_count: int = 0
     unnecessary_count: int = 0
+    payload_tokens: int = 0
+    prompt_tokens: int = 0
+    overhead_tokens: int = 0
 
     @property
     def resource_ids(self):
         return [r.resource_id for r in self.resources]
+

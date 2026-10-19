@@ -72,6 +72,61 @@ class TestCSC(unittest.TestCase):
         self.assertEqual(set(exact_ids), {"r1", "r2"})
         self.assertAlmostEqual(sum(s for _, s in exact_sel), 1.0)
 
+    def test_tokenizer_backends(self):
+        from csc.tokenizer import count_tokens, truncate_to_tokens, get_tokenizer_info, set_default_backend
+        info = get_tokenizer_info()
+        self.assertIn("backend", info)
+        text = "Cognitive State Compilation frames reasoning state construction as a 0/1 knapsack."
+        # Qwen backend
+        qwen_count = count_tokens(text, backend="qwen")
+        self.assertGreater(qwen_count, 0)
+        qwen_trunc = truncate_to_tokens(text, budget=5, backend="qwen")
+        self.assertLessEqual(count_tokens(qwen_trunc, backend="qwen"), 5)
+        # cl100k backend
+        cl_count = count_tokens(text, backend="cl100k")
+        self.assertGreater(cl_count, 0)
+
+    def test_prompt_envelope_accounting(self):
+        task = Task("t", "Find the capital of France", "Paris", ["Paris"])
+        resources = [
+            Resource("r1", "knowledge", "Paris is the capital of France.", 8),
+            Resource("r2", "knowledge", "France is in Western Europe.", 6),
+        ]
+        compiler = CognitiveStateCompiler(TfidfUtilityScorer(), budget=20, budget_mode="payload")
+        state = compiler.compile(task, resources)
+        self.assertGreater(state.payload_tokens, 0)
+        self.assertGreater(state.prompt_tokens, state.payload_tokens)
+        self.assertEqual(state.overhead_tokens, state.prompt_tokens - state.payload_tokens)
+        self.assertEqual(state.token_cost, state.payload_tokens)
+
+    def test_strict_total_budget_mode(self):
+        task = Task("t", "Query for test", "ans", ["ans"])
+        resources = [
+            Resource("r1", "knowledge", "Short fact one", 5),
+            Resource("r2", "knowledge", "Short fact two", 5),
+            Resource("r3", "knowledge", "Short fact three", 5),
+        ]
+        compiler = CognitiveStateCompiler(TfidfUtilityScorer(), budget=35, budget_mode="strict_total")
+        state = compiler.compile(task, resources)
+        self.assertLessEqual(state.prompt_tokens, 35)
+
+    def test_baselines_extended(self):
+        from csc.baselines import standard_rag_greedy_budget_filled, unbounded_full_context
+        task = Task("t", "Query", "ans", ["ans"])
+        resources = [
+            Resource("k1", "knowledge", "Knowledge fact 1", 10),
+            Resource("k2", "knowledge", "Knowledge fact 2", 10),
+            Resource("k3", "knowledge", "Knowledge fact 3", 10),
+            Resource("e1", "experience", "Experience trace", 10),
+        ]
+        # Greedy budget filled should take as many knowledge items as budget allows
+        rag_filled = standard_rag_greedy_budget_filled(task, resources, budget=25)
+        self.assertEqual(len(rag_filled.resources), 2)
+        # Unbounded full context should take all 4 resources
+        full = unbounded_full_context(task, resources)
+        self.assertEqual(len(full.resources), 4)
+
 
 if __name__ == "__main__":
     unittest.main()
+

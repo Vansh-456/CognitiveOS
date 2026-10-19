@@ -1,0 +1,76 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\citation{packer2023memgpt}
+\citation{xu2025amem}
+\citation{yan2025memoryr1,yu2026agemem}
+\citation{li2025memos}
+\citation{lewis2020rag}
+\citation{yang2018hotpotqa}
+\citation{kwiatkowski2019naturalquestions}
+\citation{zhou2025mem1}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
+\citation{yao2023react}
+\citation{schick2023toolformer}
+\citation{shinn2023reflexion}
+\citation{park2023generative}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Positioning of CSC relative to prior long-horizon agent memory systems. ``Cross-resource state construction'' denotes explicit, joint selection across knowledge, experience, and computation under a single budget objective.}}{3}{table.caption.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Problem Formulation and Method}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Heterogeneous Resource Pool}{3}{subsection.3.1}\protected@file@percent }
+\citation{chen2016xgboost}
+\citation{pedregosa2011scikit}
+\citation{yang2018hotpotqa}
+\citation{kwiatkowski2019naturalquestions}
+\citation{yao2022webshop}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Cognitive State Compilation as a Knapsack Problem}{4}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Production Scorer: Trained GBT Utility Scorer}{4}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Fallback Scorer: Dense Heuristic Scorer}{4}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Resource-Constrained Knapsack Selector}{4}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}State Composition}{4}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experimental Setup}{4}{section.4}\protected@file@percent }
+\citation{zhou2025mem1}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Cognitive State Compilation}}{5}{algorithm.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces HotpotQA @ B=500 (15-task sample). CSC is the only method reaching full coverage.}}{6}{table.caption.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Token budget sweeps. (a) CSC reaches 100\% coverage at a 500-token budget. (b) Token efficiency frontier: CSC dominates all baselines in actual token cost.}}{6}{figure.caption.4}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:budget_sweeps}{{1}{6}{Token budget sweeps. (a) CSC reaches 100\% coverage at a 500-token budget. (b) Token efficiency frontier: CSC dominates all baselines in actual token cost}{figure.caption.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{6}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Token-Budget Sweep and HotpotQA Coverage at B=500}{6}{subsection.5.1}\protected@file@percent }
+\citation{zhou2025mem1}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Cross-domain state coverage @ $B=500$.}}{7}{table.caption.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Detailed analysis at $B=500$. (a) CSC's advantage is concentrated in HotpotQA. (b) Removing resource-type awareness causes the largest coverage drop. (c) Knowledge pool share grows with budget.}}{7}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:detailed_analysis}{{2}{7}{Detailed analysis at $B=500$. (a) CSC's advantage is concentrated in HotpotQA. (b) Removing resource-type awareness causes the largest coverage drop. (c) Knowledge pool share grows with budget}{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Cross-Domain Coverage at B=500}{7}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Live LLM Evaluation}{7}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Long-Horizon Comparison Against MEM1}{7}{subsection.5.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces (A) State retention vs.\ sequence horizon $N$: Full-Context, Sliding Window, and CSC all hold 100\% retention at every horizon, while MEM1 declines to 82\% by $N=16$. (B) Context memory footprint vs.\ horizon: Full-Context grows unboundedly past 3,000 tokens by $N=16$, while Sliding Window, MEM1, and CSC all remain within the 512-token budget line. (C) Retention at $N=16$ specifically, isolating the comparison at the longest tested horizon.}}{8}{figure.caption.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Ablation Study}{8}{subsection.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Resource Pool Allocation Dynamics}{8}{subsection.5.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion and Limitations}{8}{section.6}\protected@file@percent }
+\bibstyle{plainnat}
+\bibdata{refs}
+\bibcite{chen2016xgboost}{{1}{2016}{{Chen and Guestrin}}{{}}}
+\bibcite{kwiatkowski2019naturalquestions}{{2}{2019}{{Kwiatkowski et~al.}}{{Kwiatkowski, Palomaki, Redfield, Collins, Parikh, Alberti, Epstein, Polosukhin, Devlin, Lee, et~al.}}}
+\bibcite{lewis2020rag}{{3}{2020}{{Lewis et~al.}}{{Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal, K{\"u}ttler, Lewis, Yih, Rockt{\"a}schel, Riedel, and Kiela}}}
+\bibcite{li2025memos}{{4}{2025}{{Li et~al.}}{{Li, Song, Xi, Wang, Tang, Niu, Wang, Yu, Wang, Jiang, et~al.}}}
+\bibcite{packer2023memgpt}{{5}{2023}{{Packer et~al.}}{{Packer, Fang, Patil, Lin, Wooders, and Gonzalez}}}
+\bibcite{park2023generative}{{6}{2023}{{Park et~al.}}{{Park, O'Brien, Cai, Morris, Liang, and Bernstein}}}
+\bibcite{pedregosa2011scikit}{{7}{2011}{{Pedregosa et~al.}}{{Pedregosa, Varoquaux, Gramfort, Michel, Thirion, Grisel, Blondel, Prettenhofer, Weiss, Dubourg, et~al.}}}
+\bibcite{schick2023toolformer}{{8}{2023}{{Schick et~al.}}{{Schick, Dwivedi-Yu, Dess{\`i}, Raileanu, Lomeli, Zettlemoyer, Cancedda, and Scialom}}}
+\bibcite{shinn2023reflexion}{{9}{2023}{{Shinn et~al.}}{{Shinn, Cassano, Berman, Gopinath, Narasimhan, and Yao}}}
+\bibcite{xu2025amem}{{10}{2025}{{Xu et~al.}}{{Xu, Liang, Mei, Gao, Tan, and Zhang}}}
+\bibcite{yan2025memoryr1}{{11}{2025}{{Yan et~al.}}{{Yan, Yang, Bai, Wu, Zhu, Xie, and Liu}}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{9}{section.7}\protected@file@percent }
+\bibcite{yang2018hotpotqa}{{12}{2018}{{Yang et~al.}}{{Yang, Qi, Zhang, Bengio, Cohen, Salakhutdinov, and Manning}}}
+\bibcite{yao2022webshop}{{13}{2022}{{Yao et~al.}}{{Yao, Chen, Yang, and Narasimhan}}}
+\bibcite{yao2023react}{{14}{2023}{{Yao et~al.}}{{Yao, Zhao, Yu, Du, Shafran, Narasimhan, and Cao}}}
+\bibcite{yu2026agemem}{{15}{2026}{{Yu et~al.}}{{Yu, Zhang, Wang, and Chen}}}
+\bibcite{zhou2025mem1}{{16}{2025}{{Zhou et~al.}}{{Zhou, Chen, Zhou, Chen, Kim, Song, and Chen}}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Additional Tables}{10}{appendix.A}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Live LLM evaluation (Groq Qwen3.6-27B, temperature 0). Only B4 was evaluated at $B=1000$.}}{10}{table.caption.9}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Long-horizon retention comparison across multi-turn horizon $N$, fixed $B=512$.}}{10}{table.caption.10}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Ablation study at budget $B=500$ tokens. State coverage for the full pipeline against five ablated variants.}}{11}{table.caption.11}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Approximate resource pool allocation (\% of selected budget) vs.\ token budget.}}{11}{table.caption.12}\protected@file@percent }
+\gdef \@abspage@last{18}

@@ -1,4 +1,4 @@
-% Table 2: Ablation Study across Token Budgets
+% Table 2: Ablation Study across Token Budgets (HotpotQA)
 \begin{table}[t]
 \centering
 \small
@@ -6,14 +6,15 @@
 \toprule
 \textbf{Ablation Variant} & \textbf{B=200} & \textbf{B=500} & \textbf{B=1000} & \textbf{B=2000} \\
 \midrule
-\textbf{Full CSC (Learned GBT)} & 88.9\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
-Heuristic Utility (w/o Learning) & 53.3\% & 95.6\% & 95.6\% & \textbf{100.0\%} \\
-w/o Experience Pool ($E$) & 88.9\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
-w/o Computation Pool ($C$) & 88.9\% & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
-w/o Budget Density Ordering & \textbf{91.1\%} & \textbf{100.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
-Relevance Only (No Resource Types) & 44.4\% & 75.6\% & 93.3\% & \textbf{100.0\%} \\
+\textbf{Full CSC (Learned GBT)} & 78.7\% & \textbf{96.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+Controlled Ablation: No-Type Features & 78.7\% & \textbf{96.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+w/o Experience Pool ($E$) & 74.7\% & \textbf{96.0\%} & \textbf{100.0\%} & \textbf{100.0\%} \\
+w/o Computation Pool ($C$) & 76.0\% & \textbf{96.0\%} & 96.0\% & \textbf{100.0\%} \\
+w/o Budget Density Ordering & \textbf{82.7\%} & 93.3\% & 97.3\% & \textbf{100.0\%} \\
+Knowledge-Only Selector (fills budget) & 77.3\% & \textbf{96.0\%} & 96.0\% & \textbf{100.0\%} \\
+Relevance Only (Unweighted TF-IDF) & 50.7\% & 85.3\% & 96.0\% & \textbf{100.0\%} \\
 \bottomrule
 \end{tabular}
-\caption{Ablation analysis on HotpotQA across token budgets, isolating the contribution of learned utility scoring, heterogeneous memory pools, and knapsack density packing.}
+\caption{Ablation analysis on HotpotQA across token budgets, isolating the contribution of learned utility scoring, type awareness, pool access, and knapsack density packing.}
 \label{tab:ablation_study}
 \end{table}

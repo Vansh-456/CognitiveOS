@@ -1,0 +1,55 @@
+\section*{NeurIPS Paper Checklist}
+
+\begin{enumerate}
+
+\item {\bf Claims}
+    \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The abstract and introduction clearly state the knapsack formulation, empirical results on HotpotQA, NQ, and MEM1 comparison, and explicitly scope limitations including the GBDT scorer label leakage and sample size.
+
+\item {\bf Limitations}
+    \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~6 is dedicated to discussing limitations, explicitly analyzing the scorer-label training overlap, small sample size on WebShop ($N=5$), and the requirement for larger disjoint benchmarks.
+
+\item {\bf Theory Assumptions and Proofs}
+    \item[] Question: For each theoretical result, does the paper provide the full set of assumptions and a complete proof?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The paper formulates an empirical systems optimization problem and does not state new mathematical theorems or formal proofs.
+
+\item {\bf Experimental Result Reproducibility}
+    \item[] Question: Does the paper fully disclose all information needed to reproduce the experimental results?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~4, Section~5, and Appendix~A--E provide complete specifications of baseline algorithms, token budgets, exact feature extraction equations, prompt templates, and execution parameters.
+
+\item {\bf Open Access to Data and Code}
+    \item[] Question: Does the paper describe how the data and code can be accessed by other researchers?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: All experiment runner scripts, benchmark dataset loaders, and trained model weights will be released publicly on GitHub under an open-source license upon publication (anonymized during review).
+
+\item {\bf Experimental Setting and Compute Resources}
+    \item[] Question: Does the paper describe the experimental setting and compute resources used?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~4, Appendix~A, Appendix~B, and Appendix~C report model identities (Qwen3.6-27B on Groq), local CPU execution specs, token budget constraints, and latency profiles.
+
+\item {\bf Existing Assets}
+    \item[] Question: Does the paper cite the creators of existing assets used?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~4 and Appendix~A cite existing benchmark datasets (HotpotQA, Natural Questions, WebShop) and model architectures.
+
+\item {\bf New Assets}
+    \item[] Question: Does the paper mention the license and intended use of new assets created?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: We release our modular CSC compilation pipeline, evaluation suite, and pretrained GBDT utility scorer under the MIT License for open research use.
+
+\item {\bf Crowdsourcing and Human Subjects}
+    \item[] Question: Does the paper describe human participant procedures if applicable?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: No human subjects or crowdsourcing were involved; all benchmarking was conducted using automated evaluation pipelines.
+
+\item {\bf Institutional Review Board (IRB) Approvals}
+    \item[] Question: Does the paper describe IRB approvals if applicable?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: No human participant data or personally identifiable information was gathered.
+
+\end{enumerate}

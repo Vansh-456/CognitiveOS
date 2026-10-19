@@ -1,0 +1,1527 @@
+[
+  {
+    "task_id": "cr_001",
+    "query": "Select the target database deployment configuration for Payment Gateway that respects our memory ceiling, incorporates the resolution from incident INC-101, and meets the throughput SLA.",
+    "answer": "PostgreSQL with connection pooling and serialized isolation",
+    "required_facts": [
+      "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+      "Incident INC-101 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+      "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_1_1",
+        "resource_type": "knowledge",
+        "text": "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_1_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_1_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_1_1",
+        "resource_type": "experience",
+        "text": "Incident INC-101 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_1_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_1_1",
+        "resource_type": "computation",
+        "text": "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_1_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_002",
+    "query": "Select the target database deployment configuration for Telemetry Ingestion that respects our memory ceiling, incorporates the resolution from incident INC-102, and meets the throughput SLA.",
+    "answer": "PostgreSQL with connection pooling and serialized isolation",
+    "required_facts": [
+      "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+      "Incident INC-102 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+      "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_2_1",
+        "resource_type": "knowledge",
+        "text": "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_2_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_2_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_2_1",
+        "resource_type": "experience",
+        "text": "Incident INC-102 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_2_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_2_1",
+        "resource_type": "computation",
+        "text": "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_2_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_003",
+    "query": "Select the target database deployment configuration for User Auth Service that respects our memory ceiling, incorporates the resolution from incident INC-103, and meets the throughput SLA.",
+    "answer": "PostgreSQL with connection pooling and serialized isolation",
+    "required_facts": [
+      "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+      "Incident INC-103 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+      "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_3_1",
+        "resource_type": "knowledge",
+        "text": "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_3_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_3_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_3_1",
+        "resource_type": "experience",
+        "text": "Incident INC-103 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_3_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_3_1",
+        "resource_type": "computation",
+        "text": "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_3_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_004",
+    "query": "Select the target database deployment configuration for Order Fulfillment that respects our memory ceiling, incorporates the resolution from incident INC-104, and meets the throughput SLA.",
+    "answer": "PostgreSQL with connection pooling and serialized isolation",
+    "required_facts": [
+      "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+      "Incident INC-104 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+      "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_4_1",
+        "resource_type": "knowledge",
+        "text": "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_4_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_4_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_4_1",
+        "resource_type": "experience",
+        "text": "Incident INC-104 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_4_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_4_1",
+        "resource_type": "computation",
+        "text": "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_4_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_005",
+    "query": "Select the target database deployment configuration for Search Indexer that respects our memory ceiling, incorporates the resolution from incident INC-105, and meets the throughput SLA.",
+    "answer": "PostgreSQL with connection pooling and serialized isolation",
+    "required_facts": [
+      "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+      "Incident INC-105 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+      "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_5_1",
+        "resource_type": "knowledge",
+        "text": "Database throughput spec: PostgreSQL supports 4,500 TPS with connection pooling.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_5_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_5_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_5_1",
+        "resource_type": "experience",
+        "text": "Incident INC-105 post-mortem: MongoDB failed under concurrent write lock contention; PostgreSQL with serialized isolation was mandated.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_5_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_5_1",
+        "resource_type": "computation",
+        "text": "Benchmark execution trace: Measured peak memory for PostgreSQL is 3.1 GB vs 7.8 GB ceiling.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_5_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_006",
+    "query": "Configure the inference engine for Customer Copilot under strict latency constraint, applying past deployment lesson from INC-106, and hardware profiling results.",
+    "answer": "vLLM with AWQ 4-bit quantization and PagedAttention",
+    "required_facts": [
+      "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+      "Deployment log INC-106: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+      "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_6_1",
+        "resource_type": "knowledge",
+        "text": "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_6_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_6_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_6_1",
+        "resource_type": "experience",
+        "text": "Deployment log INC-106: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_6_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_6_1",
+        "resource_type": "computation",
+        "text": "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_6_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_007",
+    "query": "Configure the inference engine for Code Generation Agent under strict latency constraint, applying past deployment lesson from INC-107, and hardware profiling results.",
+    "answer": "vLLM with AWQ 4-bit quantization and PagedAttention",
+    "required_facts": [
+      "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+      "Deployment log INC-107: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+      "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_7_1",
+        "resource_type": "knowledge",
+        "text": "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_7_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_7_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_7_1",
+        "resource_type": "experience",
+        "text": "Deployment log INC-107: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_7_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_7_1",
+        "resource_type": "computation",
+        "text": "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_7_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_008",
+    "query": "Configure the inference engine for Legal Document Analyzer under strict latency constraint, applying past deployment lesson from INC-108, and hardware profiling results.",
+    "answer": "vLLM with AWQ 4-bit quantization and PagedAttention",
+    "required_facts": [
+      "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+      "Deployment log INC-108: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+      "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_8_1",
+        "resource_type": "knowledge",
+        "text": "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_8_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_8_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_8_1",
+        "resource_type": "experience",
+        "text": "Deployment log INC-108: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_8_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_8_1",
+        "resource_type": "computation",
+        "text": "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_8_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_009",
+    "query": "Configure the inference engine for Medical Triage Bot under strict latency constraint, applying past deployment lesson from INC-109, and hardware profiling results.",
+    "answer": "vLLM with AWQ 4-bit quantization and PagedAttention",
+    "required_facts": [
+      "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+      "Deployment log INC-109: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+      "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_9_1",
+        "resource_type": "knowledge",
+        "text": "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_9_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_9_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_9_1",
+        "resource_type": "experience",
+        "text": "Deployment log INC-109: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_9_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_9_1",
+        "resource_type": "computation",
+        "text": "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_9_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_010",
+    "query": "Configure the inference engine for Real-time Translator under strict latency constraint, applying past deployment lesson from INC-110, and hardware profiling results.",
+    "answer": "vLLM with AWQ 4-bit quantization and PagedAttention",
+    "required_facts": [
+      "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+      "Deployment log INC-110: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+      "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_10_1",
+        "resource_type": "knowledge",
+        "text": "Model architecture manual: vLLM with PagedAttention reduces KV-cache fragmentation to under 4%.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_10_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_10_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_10_1",
+        "resource_type": "experience",
+        "text": "Deployment log INC-110: FP16 precision exceeded 24GB VRAM on A10G; AWQ 4-bit quantization maintained accuracy within 0.3%.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_10_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_10_1",
+        "resource_type": "computation",
+        "text": "GPU profiling run: AWQ 4-bit vLLM achieved 18.4 ms/token latency at concurrency 32.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_10_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_011",
+    "query": "Determine the optimal routing strategy for order execution Block Order Routing incorporating market rule INC-111, historical slippage trace, and live fee calculation.",
+    "answer": "Dark pool midpoint routing with Venue B smart router",
+    "required_facts": [
+      "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+      "Historical trace INC-111: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+      "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_11_1",
+        "resource_type": "knowledge",
+        "text": "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_11_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_11_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_11_1",
+        "resource_type": "experience",
+        "text": "Historical trace INC-111: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_11_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_11_1",
+        "resource_type": "computation",
+        "text": "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_11_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_012",
+    "query": "Determine the optimal routing strategy for order execution Arbitrage Execution incorporating market rule INC-112, historical slippage trace, and live fee calculation.",
+    "answer": "Dark pool midpoint routing with Venue B smart router",
+    "required_facts": [
+      "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+      "Historical trace INC-112: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+      "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_12_1",
+        "resource_type": "knowledge",
+        "text": "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_12_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_12_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_12_1",
+        "resource_type": "experience",
+        "text": "Historical trace INC-112: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_12_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_12_1",
+        "resource_type": "computation",
+        "text": "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_12_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_013",
+    "query": "Determine the optimal routing strategy for order execution FX Hedging Pipeline incorporating market rule INC-113, historical slippage trace, and live fee calculation.",
+    "answer": "Dark pool midpoint routing with Venue B smart router",
+    "required_facts": [
+      "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+      "Historical trace INC-113: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+      "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_13_1",
+        "resource_type": "knowledge",
+        "text": "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_13_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_13_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_13_1",
+        "resource_type": "experience",
+        "text": "Historical trace INC-113: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_13_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_13_1",
+        "resource_type": "computation",
+        "text": "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_13_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_014",
+    "query": "Determine the optimal routing strategy for order execution Options Delta Hedge incorporating market rule INC-114, historical slippage trace, and live fee calculation.",
+    "answer": "Dark pool midpoint routing with Venue B smart router",
+    "required_facts": [
+      "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+      "Historical trace INC-114: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+      "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_14_1",
+        "resource_type": "knowledge",
+        "text": "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_14_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_14_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_14_1",
+        "resource_type": "experience",
+        "text": "Historical trace INC-114: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_14_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_14_1",
+        "resource_type": "computation",
+        "text": "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_14_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_015",
+    "query": "Determine the optimal routing strategy for order execution Market Making Node incorporating market rule INC-115, historical slippage trace, and live fee calculation.",
+    "answer": "Dark pool midpoint routing with Venue B smart router",
+    "required_facts": [
+      "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+      "Historical trace INC-115: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+      "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_15_1",
+        "resource_type": "knowledge",
+        "text": "Exchange rulebook: Dark pool venue executes midpoint crosses with zero adverse market impact.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_15_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_15_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_15_1",
+        "resource_type": "experience",
+        "text": "Historical trace INC-115: Aggressive lit exchange routing incurred 14 bps slippage during high volatility.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_15_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_15_1",
+        "resource_type": "computation",
+        "text": "Live fee calculation trace: Smart Order Router fee matrix shows Venue B net cost is 0.4 bps lower than Lit Primary.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_15_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_016",
+    "query": "Select the candidate molecule lead for target Kinase Inhibitor based on binding affinity literature, assay trial INC-116, and molecular dynamics simulation.",
+    "answer": "Scaffold derivative 7a with methyl substitution",
+    "required_facts": [
+      "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+      "Assay trial INC-116 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+      "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_16_1",
+        "resource_type": "knowledge",
+        "text": "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_16_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_16_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_16_1",
+        "resource_type": "experience",
+        "text": "Assay trial INC-116 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_16_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_16_1",
+        "resource_type": "computation",
+        "text": "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_16_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_017",
+    "query": "Select the candidate molecule lead for target Protease Blocker based on binding affinity literature, assay trial INC-117, and molecular dynamics simulation.",
+    "answer": "Scaffold derivative 7a with methyl substitution",
+    "required_facts": [
+      "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+      "Assay trial INC-117 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+      "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_17_1",
+        "resource_type": "knowledge",
+        "text": "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_17_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_17_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_17_1",
+        "resource_type": "experience",
+        "text": "Assay trial INC-117 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_17_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_17_1",
+        "resource_type": "computation",
+        "text": "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_17_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_018",
+    "query": "Select the candidate molecule lead for target GPCR Antagonist based on binding affinity literature, assay trial INC-118, and molecular dynamics simulation.",
+    "answer": "Scaffold derivative 7a with methyl substitution",
+    "required_facts": [
+      "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+      "Assay trial INC-118 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+      "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_18_1",
+        "resource_type": "knowledge",
+        "text": "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_18_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_18_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_18_1",
+        "resource_type": "experience",
+        "text": "Assay trial INC-118 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_18_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_18_1",
+        "resource_type": "computation",
+        "text": "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_18_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_019",
+    "query": "Select the candidate molecule lead for target RNA Polymerase Target based on binding affinity literature, assay trial INC-119, and molecular dynamics simulation.",
+    "answer": "Scaffold derivative 7a with methyl substitution",
+    "required_facts": [
+      "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+      "Assay trial INC-119 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+      "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_19_1",
+        "resource_type": "knowledge",
+        "text": "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_19_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_19_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_19_1",
+        "resource_type": "experience",
+        "text": "Assay trial INC-119 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_19_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_19_1",
+        "resource_type": "computation",
+        "text": "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_19_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_020",
+    "query": "Select the candidate molecule lead for target Ion Channel Modulator based on binding affinity literature, assay trial INC-120, and molecular dynamics simulation.",
+    "answer": "Scaffold derivative 7a with methyl substitution",
+    "required_facts": [
+      "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+      "Assay trial INC-120 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+      "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_20_1",
+        "resource_type": "knowledge",
+        "text": "Pharmacology literature: Scaffold derivative 7a exhibits sub-nanomolar selectivity for target enzyme.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_20_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_20_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_20_1",
+        "resource_type": "experience",
+        "text": "Assay trial INC-120 findings: Compound 4b caused hepatotoxicity in cellular assay; methyl substitution in 7a eliminated toxic metabolite.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_20_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_20_1",
+        "resource_type": "computation",
+        "text": "Molecular dynamics simulation: 100ns simulation confirmed stable binding free energy delta-G of -11.4 kcal/mol.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_20_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_021",
+    "query": "Formulate the remediation firewall rule for threat vector DDoS Mitigation using threat intelligence, playbook INC-121, and packet inspection computation.",
+    "answer": "mTLS verification with token hash 0x889F filtering and rate-limiting",
+    "required_facts": [
+      "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+      "SOC Playbook INC-121: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+      "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_21_1",
+        "resource_type": "knowledge",
+        "text": "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_21_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_21_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_21_1",
+        "resource_type": "experience",
+        "text": "SOC Playbook INC-121: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_21_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_21_1",
+        "resource_type": "computation",
+        "text": "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_21_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_022",
+    "query": "Formulate the remediation firewall rule for threat vector Exfiltration Alert using threat intelligence, playbook INC-122, and packet inspection computation.",
+    "answer": "mTLS verification with token hash 0x889F filtering and rate-limiting",
+    "required_facts": [
+      "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+      "SOC Playbook INC-122: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+      "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_22_1",
+        "resource_type": "knowledge",
+        "text": "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_22_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_22_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_22_1",
+        "resource_type": "experience",
+        "text": "SOC Playbook INC-122: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_22_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_22_1",
+        "resource_type": "computation",
+        "text": "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_22_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_023",
+    "query": "Formulate the remediation firewall rule for threat vector API Credential Stuffing using threat intelligence, playbook INC-123, and packet inspection computation.",
+    "answer": "mTLS verification with token hash 0x889F filtering and rate-limiting",
+    "required_facts": [
+      "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+      "SOC Playbook INC-123: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+      "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_23_1",
+        "resource_type": "knowledge",
+        "text": "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_23_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_23_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_23_1",
+        "resource_type": "experience",
+        "text": "SOC Playbook INC-123: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_23_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_23_1",
+        "resource_type": "computation",
+        "text": "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_23_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_024",
+    "query": "Formulate the remediation firewall rule for threat vector Ransomware C2 Lateral using threat intelligence, playbook INC-124, and packet inspection computation.",
+    "answer": "mTLS verification with token hash 0x889F filtering and rate-limiting",
+    "required_facts": [
+      "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+      "SOC Playbook INC-124: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+      "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_24_1",
+        "resource_type": "knowledge",
+        "text": "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_24_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_24_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_24_1",
+        "resource_type": "experience",
+        "text": "SOC Playbook INC-124: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_24_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_24_1",
+        "resource_type": "computation",
+        "text": "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_24_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  },
+  {
+    "task_id": "cr_025",
+    "query": "Formulate the remediation firewall rule for threat vector Supply Chain Injection using threat intelligence, playbook INC-125, and packet inspection computation.",
+    "answer": "mTLS verification with token hash 0x889F filtering and rate-limiting",
+    "required_facts": [
+      "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+      "SOC Playbook INC-125: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+      "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F."
+    ],
+    "resources": [
+      {
+        "resource_id": "k_25_1",
+        "resource_type": "knowledge",
+        "text": "Threat intelligence report: Actor group APT-29 utilizes rotating proxy IPs in AS14061.",
+        "token_cost": 28,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "k_25_dist1",
+        "resource_type": "knowledge",
+        "text": "Standard documentation on general system operation and background utilities.",
+        "token_cost": 25,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "k_25_dist2",
+        "resource_type": "knowledge",
+        "text": "Legacy product release notes from version 1.2 archived documentation.",
+        "token_cost": 22,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "e_25_1",
+        "resource_type": "experience",
+        "text": "SOC Playbook INC-125: Dropping ASN prefixes directly caused collateral outage; enforce mTLS verification and rate-limit /v2/auth to 5 req/sec.",
+        "token_cost": 32,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "e_25_dist",
+        "resource_type": "experience",
+        "text": "Routine operator log: Scheduled weekly cluster reboot completed without incident.",
+        "token_cost": 20,
+        "utility_hint": 0.0
+      },
+      {
+        "resource_id": "c_25_1",
+        "resource_type": "computation",
+        "text": "Packet inspection output: Cluster analysis verified 98.2% of malicious traffic originated from spoofed user-agent token hash 0x889F.",
+        "token_cost": 26,
+        "utility_hint": 1.0
+      },
+      {
+        "resource_id": "c_25_dist",
+        "resource_type": "computation",
+        "text": "Diagnostic CPU temperature and fan speed monitoring report: nominal values.",
+        "token_cost": 18,
+        "utility_hint": 0.0
+      }
+    ]
+  }
+]

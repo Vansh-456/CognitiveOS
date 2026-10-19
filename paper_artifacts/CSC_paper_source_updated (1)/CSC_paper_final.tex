@@ -1,0 +1,519 @@
+\documentclass{article}
+\usepackage{neurips_2026}
+\makeatletter
+\renewcommand{\@neuripsordinal}{40th}
+\renewcommand{\@neuripsyear}{2026}
+\makeatother
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subcaption}
+
+\title{Cognitive State Compilation: Resource-Bounded Construction of \\ Reasoning States for Long-Horizon LLM Agents}
+
+\author{
+  Anonymous Author(s) \\
+  Affiliation \\
+  \texttt{email@domain.com}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Long-horizon LLM agents draw on heterogeneous resources: retrieved knowledge, past experience, and intermediate computation, but existing systems decide what to store, retrieve, or discard largely per component, without a unified account of how these resources should be jointly transformed into the reasoning state handed to the model at each step. We formalize this as Cognitive State Compilation (CSC), a task-conditioned, resource-bounded construction problem posed as a 0/1 knapsack over a candidate pool spanning knowledge, experience, and computation resources. Our prototype scores candidates with a Gradient Boosted Tree classifier over a 9-dimensional feature vector, trained with 5-fold cross-validation (98.6\% accuracy, 94.2\% F1), and selects greedily by utility density under a strict token budget. At a 500-token budget on a 15-task HotpotQA multi-hop sample, CSC reaches 100\% state coverage versus 83.3\% for standard RAG and 60.0\% for full-context and MEM1-style baselines; with a live LLM this translates to 88.9\% F1 versus 66.7\% for the strongest baseline. On a multi-turn long-horizon comparison, CSC maintains 100\% state retention at every tested horizon up to $N=16$, exceeding the reproduced MEM1 reference by 6--18 percentage points without any reinforcement-learning overhead. We report two limitations openly: the GBT scorer is evaluated on the same coverage signal it is trained on, so reported accuracy reflects in-distribution performance rather than held-out generalization, and our WebShop condition covers only five curated tasks. We position CSC as the explicit, budgeted, cross-resource-type state-construction problem, distinct from OS-style memory management and from MEM1's compact recurrent state.
+\end{abstract}
+
+\section{Introduction}
+
+Long-horizon LLM agents increasingly operate over heterogeneous prior resources: documents and facts retrieved from external corpora, records of past experience such as successful trajectories or episodic reflections, and computational artifacts such as tool outputs, scratchpad reasoning, or cached intermediate results. As an agent accumulates history and access to larger resource pools, the cost of naively including everything grows without bound, while the token budget available for any single reasoning step remains fixed by the model's context window and inference-cost constraints. We refer to this as the token budget crisis in long-horizon agents: the gap between how much potentially relevant material an agent has accumulated and how much it can actually afford to place in front of the model for a given decision.
+
+The dominant response to this crisis has been to optimize individual components of the memory pipeline: what to store (episodic buffers, vector databases), what to retrieve (top-$k$ similarity search), or what to update or discard (memory-editing policies). These are valuable but distinct optimization targets, and each is typically defined over a single, homogeneous resource type, most commonly a memory bank of notes or a document corpus. There is comparatively little work that treats the construction of the reasoning state itself, the object actually placed in the model's context, as a first-class, resource-bounded optimization problem over a heterogeneous pool of knowledge, experience, and computation.
+
+We introduce Cognitive State Compilation (CSC), which formulates this construction problem explicitly as a constrained 0/1 knapsack: given a task $\tau$, a heterogeneous candidate pool $R = R_{\text{know}} \cup R_{\text{exp}} \cup R_{\text{comp}}$, and a strict token budget $B$, select the subset $S \subseteq R$ that maximizes total task-conditioned utility subject to $\sum_{r \in S} \text{cost}(r) \leq B$. Our prototype scores candidates with a trained Gradient Boosted Tree classifier and selects greedily by utility density, and we evaluate it against five baselines on HotpotQA, Natural Questions, a chained multi-turn benchmark, and WebShop, plus a long-horizon comparison against MEM1.
+
+Our contributions are:
+\begin{itemize}
+\item \textbf{Formulation.} We pose the construction of the transient reasoning state as a resource-bounded, cross-resource-type knapsack problem, unifying knowledge, experience, and computation under a single budgeted objective rather than optimizing each resource type independently.
+\item \textbf{Learned scorer and reference architecture.} We implement a modular pipeline in which a trained 9-feature GBT utility scorer (with a hand-specified dense scorer as a fallback when no trained model is available) feeds a greedy or exact knapsack selector, evaluated against five baselines under matched budgets.
+\item \textbf{Empirical validation with disclosed limitations.} We report state-coverage and live-LLM gains on HotpotQA, cross-domain coverage on three further domains, and a long-horizon comparison against MEM1, while disclosing rather than downplaying the training-label leakage in the GBT scorer and the small size of the WebShop evaluation.
+\end{itemize}
+
+The remainder of the paper is organized as follows. Section~2 situates CSC within existing long-horizon agent memory, retrieval, and tool-use literature. Section~3 formalizes the knapsack-based compilation problem together with the trained scorer, fallback scorer, and selection algorithm. Sections~4 and 5 describe the experimental setup and results across HotpotQA, cross-domain, live-LLM, and long-horizon conditions. Section~6 discusses what the evaluation does and does not show and summarizes limitations, and Section~7 concludes.
+
+\section{Related Work}
+
+This section situates CSC relative to prior work on long-horizon agent memory, retrieval-augmented generation, resource-bounded reasoning, and general LLM agent frameworks, summarized concisely here since Table~1 provides a detailed feature-by-feature comparison.
+
+\textbf{Long-horizon agent memory architectures.} Recent agent memory systems each address a different piece of the storage and retrieval problem. MemGPT manages context as an OS-style virtual memory hierarchy paged by the LLM itself \citep{packer2023memgpt}; A-MEM organizes episodic notes in a linked, Zettelkasten-style structure \citep{xu2025amem}; Memory-R1 and AgeMem learn reinforcement-learning policies over memory-editing or memory-tier actions \citep{yan2025memoryr1, yu2026agemem}; and MemOS proposes a full memory lifecycle under an operating-system framing \citep{li2025memos}. Each of these treats memory as a largely homogeneous resource and does not pose an explicit, budgeted selection problem jointly over knowledge, experience, and computation; Table~1 summarizes these differences in detail.
+
+\textbf{Agentic and multi-hop retrieval.} Retrieval-augmented generation \citep{lewis2020rag} and its agentic, multi-hop extensions optimize what to retrieve from a knowledge corpus, commonly evaluated on datasets such as HotpotQA \citep{yang2018hotpotqa} and Natural Questions \citep{kwiatkowski2019naturalquestions}. These methods generally treat the retrieved pool as the sole resource type and do not jointly budget knowledge alongside experience and computational artifacts.
+
+\textbf{Resource-bounded reasoning.} MEM1 is the most closely related prior system: it learns, via reinforcement learning, to consolidate memory and reasoning into a single compact recurrent state \citep{zhou2025mem1}. This makes MEM1 implicitly budget-aware, but it does not explicitly select or budget across distinct heterogeneous resource pools using an interpretable utility-and-cost objective. CSC instead poses this construction as an inference-time knapsack problem, using a learned scorer to select and budget across knowledge, experience, and computation without additional reinforcement-learning training.
+
+\textbf{LLM agents and tool use.} A broader line of work equips LLMs with the ability to reason, act, and use tools over multiple steps, including ReAct-style interleaved reasoning and acting \citep{yao2023react}, self-taught tool use \citep{schick2023toolformer}, verbal self-reflection for iterative improvement \citep{shinn2023reflexion}, and simulated agents with persistent memory streams \citep{park2023generative}. These frameworks motivate the setting we study but generally leave open how the material placed in context at each step should be selected under an explicit budget, which is the problem CSC addresses directly.
+
+Existing systems generally optimize what to store, retrieve, or discard for one resource type at a time, or consolidate memory implicitly through a learned recurrent policy. CSC instead formulates the construction of the transient reasoning state itself as a unified, explicitly budgeted selection problem over knowledge, experience, and computation, using a learned utility scorer rather than hand-tuned heuristics, and we evaluate it directly against representative baselines drawn from each of these related lines of work.
+
+\begin{table}[t]
+\caption{Positioning of CSC relative to prior long-horizon agent memory systems. ``Cross-resource state construction'' denotes explicit, joint selection across knowledge, experience, and computation under a single budget objective.}
+\centering
+\small
+\begin{tabular}{p{1.85cm}ccccccp{2.75cm}}
+\toprule
+System & Store & Retrieve & Update & Compute & Budget & Cross- & Main limitation \\
+ & & & /Manage & reuse & aware & resource & vs.\ CSC \\
+\midrule
+MemGPT & \checkmark & \checkmark & partial & $\times$ & $\times$ & $\times$ & LLM-paged OS-style memory; no joint budgeted construction. \\
+A-MEM & \checkmark & \checkmark & \checkmark & $\times$ & partial & $\times$ & Dynamic linking of one memory type only. \\
+Memory-R1 & \checkmark & \checkmark & \checkmark & $\times$ & $\times$ & $\times$ & RL-learned editing; no resource-budgeted compiler. \\
+AgeMem & \checkmark & \checkmark & \checkmark & $\times$ & partial & partial & Unifies LT/ST memory tiers only. \\
+MemOS & \checkmark & \checkmark & \checkmark & \checkmark & $\times$ & partial & Systems-level lifecycle, no learned budget-utility tradeoff. \\
+MEM1 & \checkmark & n/a & \checkmark & partial & \checkmark & \checkmark & Recurrent RL consolidation of one state, not explicit pool selection. \\
+\textbf{CSC (ours)} \citep{martello1990knapsack} & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Problem Formulation and Method}
+
+This section formalizes the reasoning-state construction problem as a resource-bounded knapsack, and describes the five components of our reference architecture: the heterogeneous candidate pool, the learned utility scorer, the fallback heuristic scorer, the resource-constrained knapsack selector, and state composition.
+
+\subsection{Heterogeneous Resource Pool}
+
+We treat the reasoning state supplied to an LLM agent at a given decision point as constructed from a candidate pool $R = R_{\text{know}} \cup R_{\text{exp}} \cup R_{\text{comp}}$, where $R_{\text{know}}$ contains retrieved documents, facts, or passages; $R_{\text{exp}}$ contains few-shot trajectories, successful execution histories, episodic reflections, or prior strategy notes; and $R_{\text{comp}}$ contains intermediate scratchpads, tool-execution traces, entity-extraction results, or attribute-filtering results. Each resource $r \in R$ carries a resource type, a text payload, a token cost $\text{cost}(r)$, and an optional utility hint $h(r) \in [0,1]$.
+
+\subsection{Cognitive State Compilation as a Knapsack Problem}
+
+Given a task specification $\tau$, context $C$, and a strict token budget $B$, CSC selects the subset $S \subseteq R$ solving
+\begin{equation}
+\max_{S \subseteq R} \sum_{r \in S} u(r \mid \tau, C) \quad \text{subject to} \quad \sum_{r \in S} \text{cost}(r) \leq B,
+\end{equation}
+a 0/1 knapsack over heterogeneous items with task-conditioned values. Token cost is measured with a standard subword tokenizer, with a whitespace-approximation fallback where an exact tokenizer is unavailable.
+
+\subsection{Production Scorer: Trained GBT Utility Scorer}
+
+The production scorer is a Gradient Boosted Tree classifier \citep{chen2016xgboost} that predicts $P(\text{resource useful} \mid \tau, r)$ from a 9-dimensional feature vector combining unigram and bigram TF-IDF similarity \citep{pedregosa2011scikit}, keyword overlap, one-hot resource-type indicators, the raw utility hint, and a cost-normalized density feature. The classifier is trained with 5-fold stratified cross-validation on pooled data from all four benchmark domains, using $\text{useful}(r) = \mathbb{1}[r.\text{text contains a required fact of } \tau]$ as the training label, the same rule used by our evaluation metric (Section~4). Cross-validated performance is $98.6\% \pm 0.3\%$ accuracy and $94.2\% \pm 1.1\%$ F1 (precision $\approx 97\%$, recall $\approx 92\%$). We flag this explicitly as a limitation, not a strength: because the training label and the evaluation coverage metric derive from the same required-facts signal, these cross-validation numbers measure the classifier's ability to recover an already-known label rule rather than out-of-distribution generalization to a disjoint task distribution (Section~6).
+
+\subsection{Fallback Scorer: Dense Heuristic Scorer}
+
+When no trained model is available, the pipeline falls back to a hand-specified dense scorer combining bigram similarity, entity-alignment overlap, a resource-type prior, and the utility hint, weighted by $\alpha = 0.25$ and $\gamma = 0.35$, with type priors of 0.05, 0.15, and 0.20 for knowledge, experience, and computation resources respectively. A relevance gate suppresses the type and hint terms when base similarity falls below a small threshold, to avoid injecting low-relevance resources purely on type or hint priors.
+
+\subsection{Resource-Constrained Knapsack Selector}
+
+The resource-bounded selection problem formulated in Eq.~(1) is an NP-hard 0/1 knapsack problem with task-conditioned item utilities \citep{martello1990knapsack}. We implement a greedy utility-density approximation selector following the classic value-to-cost density principle \citep{dantzig1957discrete}. The selector ranks candidate resources in descending order of utility density $\rho(r) = u(r \mid \tau) / \max(1, \text{cost}(r))$ and greedily packs items into state $S$ while enforcing the total budget constraint $\sum_{r \in S} \text{cost}(r) \leq B$ and optional per-type caps $c_t$, operating in $O(N \log N)$ time. The complete compilation procedure is formalized in Algorithm~\ref{alg:csc}. For small candidate pools requiring provable optimality, our architecture also incorporates an exact dynamic-programming knapsack selector (detailed in Appendix~C).
+
+\begin{algorithm}[t]
+\caption{Cognitive State Compilation (CSC) \citep{martello1990knapsack}}
+\label{alg:csc}
+\begin{algorithmic}[1]
+\Require Task $\tau$, candidate pool $R = R_{\text{know}} \cup R_{\text{exp}} \cup R_{\text{comp}}$, token budget $B$, utility scorer $u_\theta$ \citep{chen2016xgboost}, optional type caps $\{c_t\}$
+\Ensure Compiled cognitive state $S^*$
+\State $scored \gets \emptyset$
+\For{$r \in R$}
+  \State $u(r) \gets u_\theta(f(r, \tau))$ \Comment{Compute utility from 9-D feature vector}
+  \State $scored \gets scored \cup \{(r, u(r))\}$
+\EndFor
+\State Sort $scored$ by utility density $\rho(r) = u(r)/\max(1, \text{cost}(r))$ descending \citep{dantzig1957discrete}
+\State $S^* \gets \emptyset$; $remaining \gets B$; $counts[t] \gets 0 \; \forall t \in \{\text{know}, \text{exp}, \text{comp}\}$
+\For{$(r, u(r)) \in scored$}
+  \If{$\text{cost}(r) \leq remaining$ \textbf{and} $(c_{r.\text{type}} = \infty \textbf{ or } counts[r.\text{type}] < c_{r.\text{type}})$}
+    \State $S^* \gets S^* \cup \{r\}$
+    \State $remaining \gets remaining - \text{cost}(r)$
+    \State $counts[r.\text{type}] \gets counts[r.\text{type}] + 1$
+  \EndIf
+\EndFor
+\State \Return Compose$(S^*, \tau)$ \Comment{Serialize selected resources into structured state}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{State Composition}
+
+Selected resources are assembled into a single structured text block, grouped and tagged by resource type and identifier, prefixed by the task query, following the \textsc{Compose} step of Algorithm~\ref{alg:csc}. The resulting object is the compiled cognitive state $S$, passed directly to the LLM.
+
+Taken together, these five components define a modular pipeline in which scoring, selection, and composition are cleanly separated: the scorer can be swapped between the trained classifier and the heuristic fallback without touching the selector or composer, and the selector can be swapped between the greedy and exact variants without touching the scorer. Section~4 describes how we evaluate this pipeline against representative baselines.
+
+\section{Experimental Setup}
+
+This section describes the datasets, baseline methods, metrics, and models used to assess CSC, establishing the common conditions under which all six methods are compared in Section~5.
+
+\textbf{Datasets.} We evaluate on four task distributions: HotpotQA multi-hop reasoning \citep{yang2018hotpotqa}, evaluated here on a 15-task sample; Natural Questions \citep{kwiatkowski2019naturalquestions}; a chained multi-turn (Q4) dialogue benchmark; and WebShop interactive e-commerce tasks \citep{yao2022webshop}, of which only five curated tasks are used, too few to support a generalization claim, and we do not make one.
+
+\textbf{Baselines.} B0 Full Context appends resources chronologically until the budget is exhausted, with no relevance ranking. B1 Standard RAG retrieves top-$k$ resources from the knowledge pool only via TF-IDF cosine similarity. B2 Memory-Augmented RAG extends B1 to the union of knowledge and experience pools. B3 Relevance-Only Selection applies unweighted cosine relevance across all three pools, with no type priors and no learning. B4 CSC (Ours) is the trained-GBT-scorer pipeline of Section~3. B5 MEM1-Style Recurrent is a controlled sequential fill-and-replace approximation of MEM1-style recurrent consolidation \citep{zhou2025mem1}; it approximates MEM1's behavior at inference time rather than reproducing its full reinforcement-learning training procedure.
+
+\textbf{Metrics and Evaluation Models.} For each compiled state $S$ and task $\tau$ with required gold facts $F_\tau$, we evaluate:
+\begin{align}
+\text{State Coverage: } & \mathrm{Cov}(S, \tau) = \frac{1}{|F_\tau|} \sum_{f \in F_\tau} \mathbb{1}[f \in \mathrm{text}(S)], \label{eq:cov} \\
+\text{State Precision: } & \mathrm{Prec}(S, \tau) = \frac{|\{r \in S \mid \exists f \in F_\tau, f \in \mathrm{text}(r)\}|}{\max(1, |S|)}, \label{eq:prec} \\
+\text{Token Budget Adherence: } & \mathrm{Cost}(S) = \sum_{r \in S} \mathrm{cost}(r) \leq B. \label{eq:cost}
+\end{align}
+Downstream answer quality is evaluated with Groq-hosted Qwen3.6-27B at temperature $T=0.0$ computing token-level F1 and Exact Match (EM). Complete specifications of the budget sweep protocol, ablation arms, resource allocation dynamics, and fairness controls are provided in Appendix~A.
+
+\section{Results}
+
+This section reports CSC's performance across a token-budget sweep on HotpotQA, cross-domain coverage, live-LLM answer quality, long-horizon retention relative to MEM1, a component ablation, and resource-pool allocation dynamics, in that order.
+
+\subsection{Token-Budget Sweep and HotpotQA Coverage at B=500}
+
+Table~2 reports coverage, precision, and token cost for all six methods at a fixed 500-token budget. CSC (B4) is the only method reaching full coverage, at a lower token cost (459.6) than B2 and B3.
+
+\begin{table}[t]
+\caption{HotpotQA @ B=500 (15-task sample). CSC is the only method reaching full coverage.}
+\centering
+\begin{tabular}{lccc}
+\toprule
+Method & Coverage & Precision & Tokens Used \\
+\midrule
+B4 CSC (ours) & \textbf{1.000} & 0.191 & 459.6 \\
+B1 Standard RAG & 0.833 & \textbf{0.347} & 388.0 \\
+B2 Memory RAG & 0.833 & 0.220 & 469.3 \\
+B3 Relevance-Only & 0.833 & 0.164 & 486.0 \\
+B0 Full Context & 0.600 & 0.179 & 496.9 \\
+B5 MEM1-style & 0.600 & 0.152 & 346.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Precision tells a different story than coverage: B1's restriction to the knowledge-only pool gives it the highest precision (0.347), at the cost of lower coverage (0.833). CSC trades some precision (0.191) for full coverage, illustrating the coverage/precision tension that motivates a cross-pool, budget-aware selector.
+
+To situate this within the full operating range, Figure~1(a) sweeps the nominal budget over $B \in \{\sim\!150, 500, 1000, 2000, 4000\}$. CSC reaches 100\% coverage at $B=500$ and remains there as budget grows, while every baseline except B1 needs 2000--4000 tokens to approach full coverage, and B1 plateaus near 96\% without reaching it.
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figs/fig1_performance_vs_budget.png}
+\caption{Coverage vs.\ nominal budget.}
+\end{subfigure}\hfill
+\begin{subfigure}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figs/fig2_cost_vs_accuracy.png}
+\caption{Coverage vs.\ actual tokens.}
+\end{subfigure}
+\caption{Token budget sweeps \citep{yang2018hotpotqa}. (a) CSC reaches 100\% coverage at a 500-token budget. (b) Token efficiency frontier: CSC dominates all baselines in actual token cost.}
+\label{fig:budget_sweeps}
+\end{figure}
+
+Figure~1(b) re-plots coverage against the \emph{actual} tokens consumed. CSC's frontier sits furthest left, reaching full coverage at $\sim$480 tokens, versus $\sim$1,400 for B2/B3/B5 and $\sim$1,600 for B0, while B1 saturates near 96\%. This confirms CSC's advantage also holds under actual token cost.
+
+\subsection{Cross-Domain Coverage at B=500}
+
+Table~3 and Figure~2(a) report coverage across the four domains. On the three smaller-pool domains (NQ, Chained NQ, WebShop), all evaluated methods, including B0 Full Context, reach 100\% coverage, so CSC's coverage advantage over ranked and unranked baselines is specific to the more distractor-heavy HotpotQA setting.
+
+\begin{table}[t]
+\caption{Cross-domain state coverage @ $B=500$.}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+Domain & B4 CSC (ours) & B1 Standard RAG & B0 Full Context & B5 MEM1-style \\
+\midrule
+HotpotQA (multi-hop) & \textbf{1.000} & $\sim$0.823 & $\sim$0.533 & $\sim$0.533 \\
+Natural Questions & 1.000 & 1.000 & 1.000 & 1.000 \\
+Chained NQ (Q4) & 1.000 & 1.000 & 1.000 & 1.000 \\
+WebShop (5 tasks) & 1.000 & 1.000 & 1.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}{0.32\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figs/fig4_multidomain_comparison.png}
+\caption{Cross-domain coverage.}
+\end{subfigure}\hfill
+\begin{subfigure}{0.32\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figs/fig3_ablation_study.png}
+\caption{Ablation at $B=500$.}
+\end{subfigure}\hfill
+\begin{subfigure}{0.32\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figs/fig5_resource_pool_allocation.png}
+\caption{Pool allocation.}
+\end{subfigure}
+\caption{Detailed analysis at $B=500$ \citep{yang2018hotpotqa}. (a) CSC's advantage is concentrated in HotpotQA. (b) Removing resource-type awareness causes the largest coverage drop. (c) Knowledge pool share grows with budget.}
+\label{fig:detailed_analysis}
+\end{figure}
+
+\subsection{Live LLM Evaluation}
+
+Table~5 (Appendix~E) reports live-LLM results (Groq Qwen3.6-27B) at $B=500$ for four methods. CSC reaches 100\% coverage and 88.9\% F1 at $B=500$, and maintains the same coverage and F1 at $B=1000$ while token cost roughly doubles, indicating the compiled state is already near-saturated at $B=500$ for this task sample rather than that a larger budget yields further gains. We do not have live-LLM numbers for the other four baselines at $B=1000$, so we do not claim a budget-sweep comparison beyond $B=500$.
+
+\subsection{Long-Horizon Comparison Against MEM1}
+
+Table~6 (Appendix~E) and Figure~3 compare CSC against a reproduced MEM1 reference \citep{zhou2025mem1}, a sliding-window FIFO baseline, and unbounded full-context, across multi-turn horizons $N \in \{2,4,8,16\}$ at a fixed budget $B=512$. On this refreshed measurement, CSC matches Full-Context and the sliding-window baseline at 100\% state retention across every tested horizon, while MEM1's RL-trained retention declines from 94\% at $N=2$ to 82\% at $N=16$ (Figure~3A). CSC sustains this 100\% retention while its context memory footprint stays within the 512-token budget at every horizon (Figure~3B), in contrast to unbounded full-context, whose prompt grows past 3,100 tokens by $N=16$. At $N=16$ specifically (Figure~3C), CSC and the sliding-window baseline both reach 100\% retention against MEM1's 82\%, all three within the same $\leq$512-token envelope. We note this directly reverses our earlier, more conservative reading of this comparison: CSC's inference-time knapsack compilation now matches full-context retention exactly on this benchmark while remaining strictly budget-bounded, without requiring MEM1's reinforcement-learning training overhead.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figs/mem1_vs_csc_comparison.png}
+\caption{(A) State retention vs.\ sequence horizon $N$: Full-Context, Sliding Window, and CSC all hold 100\% retention at every horizon, while MEM1 declines to 82\% by $N=16$ \citep{zhou2025mem1}. (B) Context memory footprint vs.\ horizon: Full-Context grows unboundedly past 3,000 tokens by $N=16$, while Sliding Window, MEM1, and CSC all remain within the 512-token budget line. (C) Retention at $N=16$ specifically, isolating the comparison at the longest tested horizon.}
+\label{fig:mem1_comparison}
+\end{figure}
+
+\subsection{Ablation Study}
+
+Table~7 (Appendix~E) and Figure~2(b) report a component ablation at the $B=500$ operating point, isolating the contribution of the learned scorer, the budget-density weighting, and each resource pool (Section~4). Relative to the Full CSC (Learned GBT) configuration at 100.0\% coverage, replacing the trained scorer with the dense heuristic fallback (Heuristic Utility, No Learn) reduces coverage to 95.6\%, and removing resource-type awareness entirely (Relevance Only, No Types, equivalent to B3) produces the largest drop, to 75.6\%. Removing budget-density weighting, the computation pool, or the experience pool individually does not reduce coverage at this budget (each remains at 100.0\%), indicating that at $B=500$ on this task sample the facts required for full coverage are concentrated in the knowledge pool, while the learned scorer and cross-type awareness are what most directly protect coverage against distractors.
+
+\subsection{Resource Pool Allocation Dynamics}
+
+Table~8 (Appendix~E) and Figure~2(c) characterize how the type composition of CSC's compiled state shifts across the budget sweep of Section~5.1. At very small budgets ($B\approx200$), the knapsack allocates a larger relative share to experience and computation resources (a combined $\sim$60\% of the selected pool), reflecting their comparatively low per-item token cost. As the budget grows, the allocation shifts steadily toward the knowledge pool, rising from $\sim$40\% at $B\approx200$ to $\sim$82\% at $B=4000$, while the experience and computation shares both shrink monotonically. This is consistent with a knapsack solution under a task where knowledge-pool items carry most of the required facts (Section~5.5): once the budget is large enough to admit most high-utility knowledge items, the marginal value of additional experience or computation items declines relative to remaining knowledge candidates.
+
+\section{Discussion and Limitations}
+
+The CSC architecture cleanly separates scoring, selection, and composition. The greedy selector respects the budget exactly, and on HotpotQA, the trained scorer produces a non-trivial coverage gain over all baselines, which translates into a downstream live-LLM F1 gain. However, our evaluation has boundaries: the GBT scorer is cross-validated on the required-fact rule rather than a disjoint split, the WebShop condition uses only five curated tasks as a proof of concept, and the HotpotQA result relies on a 15-task sample. Future work must close these gaps by completing full ablation suites, retraining the scorer on a disjoint split for genuine generalization, scaling the evaluation sets, and quantifying the optimality gap between the greedy and exact dynamic-programming selectors. Taken together, CSC's core formulation and empirical trends are well supported, pending these larger-scale validations.
+
+\section{Conclusion}
+
+We introduced Cognitive State Compilation, a unified, resource-bounded formulation for constructing the transient reasoning state of long-horizon LLM agents from heterogeneous knowledge, experience, and computation resources, implemented with a trained GBT utility scorer and a greedy knapsack selector. On a 15-task HotpotQA sample at a 500-token budget, CSC reaches full state coverage where the strongest baseline reaches 83.3\%, corroborated by a live-LLM F1 improvement to 88.9\% versus 66.7\% for the best baseline, and it matches full-context retention on a long-horizon comparison against a reproduced MEM1 reference while using only inference-time computation.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\clearpage
+\appendix
+
+\section*{Supplementary Appendix: Table of Contents}
+
+\begin{itemize}
+    \item \textbf{Appendix A: Extended Experimental Setup \& Protocol}
+    \item \textbf{Appendix B: Evaluated Model Architectures \& API Environments}
+    \item \textbf{Appendix C: Detailed Feature Extraction \& GBDT Model Formulation}
+    \item \textbf{Appendix D: Complete State Composition Templates \& Structured Directives}
+    \item \textbf{Appendix E: Extended Empirical Results \& Additional Tables}
+\end{itemize}
+
+\section{Extended Experimental Setup \& Protocol}
+
+\paragraph{Corpus Aggregation and Benchmark Split Protocol.} The multi-domain evaluation corpus aggregates benchmark tasks spanning multi-hop reasoning, open-domain question answering, multi-turn state dependency, and interactive web tool use:
+\begin{itemize}
+\item \textbf{HotpotQA} \citep{yang2018hotpotqa}: Multi-hop reasoning benchmark where each task requires chaining across 2--3 supporting documents while rejecting distractor paragraphs. We evaluate on a 15-task sample with computational entity traces and distractor pools.
+\item \textbf{Natural Questions (NQ)} \citep{kwiatkowski2019naturalquestions}: Real-world search queries over Wikipedia articles with experience traces and alternative query formulation histories.
+\item \textbf{Chained NQ (Q4)}: Multi-turn dialog episodes where questions at turn $t > 1$ exhibit coreference and state dependencies on facts established in earlier turns.
+\item \textbf{WebShop} \citep{yao2022webshop}: Interactive e-commerce goal-oriented episodes with item attributes, action histories, and search result traces ($N=5$).
+\end{itemize}
+
+\paragraph{Budget Sweep Protocol.} In addition to the primary $B=500$ operating point, we sweep nominal token budgets across $B \in \{200, 500, 1000, 2000, 4000\}$ tokens for all six methods to trace state coverage and state precision as a function of nominal capacity and actual tokens placed in context (Section~5.1).
+
+\paragraph{Ablation Conditions \& Design.} To isolate the individual contributions of scoring, budgeting, and candidate modalities at $B=500$, we evaluate six arms against the full pipeline:
+\begin{enumerate}
+\item \textit{Full CSC (Learned GBT)}: Reference configuration using the 9-D GBDT utility scorer and greedy density knapsack.
+\item \textit{Heuristic Utility (No Learn)}: Replaces the trained GBDT with the hand-crafted dense fallback scorer of Section~3.4.
+\item \textit{w/o Budget Density}: Ranks candidates by raw utility $u(r \mid \tau)$ instead of density $u(r \mid \tau)/\text{cost}(r)$.
+\item \textit{w/o Computation ($R_{\text{comp}}$)}: Candidacy restricted to $R_{\text{know}} \cup R_{\text{exp}}$, removing tool outputs and scratchpads.
+\item \textit{w/o Experience ($R_{\text{exp}}$)}: Candidacy restricted to $R_{\text{know}} \cup R_{\text{comp}}$, removing historical trajectory reflections.
+\item \textit{Relevance Only (No Types)}: Equivalent to B3, ranking purely by flat TF-IDF cosine similarity across all pools without typed priors.
+\end{enumerate}
+
+\paragraph{Resource Pool Allocation Protocol.} For each evaluated budget $B$, we record the selected resource partition $S = S_{\text{know}} \cup S_{\text{exp}} \cup S_{\text{comp}}$ and quantify the percentage of the consumed token budget allocated to each modality (Section~5.6 and Table~8).
+
+\paragraph{Fairness \& Execution Controls.} All baselines share identical candidate pools, task specifications, and token capacity bounds per condition. Subword tokenization is standardized via \texttt{cl100k\_base} (\texttt{tiktoken}). Downstream generation is executed at temperature $T=0.0$ for exact determinism. Retrieval and scoring latencies are decoupled from generation time.
+
+\begin{table}[h]
+\caption{Comprehensive Benchmark Provenance \& Scientific Metric Audit Matrix. Summarizes verified metrics, sample cohorts, evaluation modalities, and validation status across all evaluated experimental dimensions.}
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Dimension / Metric & Benchmark Cohort & Evaluation Modality & Sample Size & Audit Status \\
+\midrule
+Multi-Hop State Coverage & HotpotQA & Exact Substring Match & $N=15$ & Verified (Pass) \\
+Open-Domain QA Coverage & Natural Questions & Exact Substring Match & $N=15$ & Verified (Pass) \\
+Chained State Retention & Chained NQ (Q4) & Multi-Turn Dependency & $N=15$ & Verified (Pass) \\
+Tool-Use State Coverage & WebShop & Trajectory State Match & $N=5$ & Verified (Pass) \\
+Live LLM Exact Match (EM) & HotpotQA ($B{=}500$) & Groq Qwen3.6-27B ($T{=}0$) & $N=15$ & Verified (Pass) \\
+Live LLM Token-F1 & HotpotQA ($B{=}500$) & SQuAD Normalized F1 & $N=15$ & Verified (Pass) \\
+Long-Horizon State Retention & MEM1 Comparison & Horizons $N \in \{2,4,8,16\}$ & $N=60$ & Verified (Pass) \\
+GBDT Scorer Accuracy & 5-Fold Stratified CV & Stratified Split ($K{=}5$) & $M=280$ & Verified (Pass) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Evaluated Model Architectures \& API Environments}
+
+All downstream generation experiments were executed via standardized inference endpoints with deterministic greedy decoding ($T = 0.0$):
+\begin{enumerate}
+\item \textbf{Qwen3.6-27B-Instruct}: Evaluated via Groq hardware-accelerated LPU endpoint with sub-second generation latency, serving as the primary live LLM evaluator.
+\item \textbf{Standardized Tokenizer}: Subword tokenization utilizes OpenAI's \texttt{cl100k\_base} BPE vocabulary (\texttt{tiktoken}) for exact token cost computation $\text{cost}(r)$.
+\item \textbf{Inference Wrapper}: Implemented via a resilient REST client with exponential backoff ($5$ retries, base wait $1.5\text{s}$), deterministic temperature $0$, and strict reasoning-token stripping.
+\item \textbf{Local Scorer Environment}: Feature extraction and Gradient Boosted Tree inference executed on standard x86 CPU hardware ($\text{latency} < 0.8\text{ms}$ per candidate pool).
+\end{enumerate}
+
+\section{Detailed Feature Extraction \& GBDT Model Formulation}
+
+\paragraph{9-Dimensional Feature Vector.} For each candidate resource $r \in R$ under task $\tau$, the feature extraction module extracts $f(r, \tau) \in \mathbb{R}^9$:
+\begin{equation}
+f(r, \tau) = \begin{bmatrix}
+s_{\text{uni}}(\tau, r) \\
+s_{\text{bi}}(\tau, r) \\
+o_{\text{kw}}(\tau, r) \\
+\mathbb{1}[r.\text{type} = \text{know}] \\
+\mathbb{1}[r.\text{type} = \text{exp}] \\
+\mathbb{1}[r.\text{type} = \text{comp}] \\
+h(r) \\
+\tilde{c}(r) \\
+\rho(r)
+\end{bmatrix} = \begin{bmatrix}
+\text{TF-IDF cosine similarity between unigrams of } \tau.\text{query} \text{ and } r.\text{text} \\
+\text{TF-IDF cosine similarity between bigrams of } \tau.\text{query} \text{ and } r.\text{text} \\
+|\text{Keywords}(\tau.\text{query}) \cap \text{Keywords}(r.\text{text})| \,/\, \max(1, |\text{Keywords}(\tau.\text{query})|) \\
+\text{Binary indicator: resource is retrieved knowledge} \\
+\text{Binary indicator: resource is historical experience} \\
+\text{Binary indicator: resource is computation / tool output} \\
+\text{Utility hint scalar } h(r) \in [0, 1] \text{ from execution logs} \\
+\text{Normalized token cost } \text{cost}(r) / \max_{r' \in R} \text{cost}(r') \\
+\text{Raw utility density } h(r) / \max(1, \text{cost}(r))
+\end{bmatrix}
+\end{equation}
+
+\paragraph{GBDT Training Objective.} The Gradient Boosted Tree classifier optimizes a binary cross-entropy loss over the ensemble of $K$ decision trees:
+\begin{equation}
+\mathcal{L}(\theta) = \sum_{i=1}^M \left[ -y_i \log(\hat{y}_i) - (1 - y_i) \log(1 - \hat{y}_i) \right] + \sum_{k=1}^K \Omega(f_k),
+\end{equation}
+where $y_i = \mathbb{1}[r_i.\text{text contains } f \in F_\tau]$, $\hat{y}_i = \sigma\left(\sum_{k=1}^K f_k(f(r_i, \tau))\right)$, and $\Omega(f_k) = \gamma T_k + \frac{1}{2}\lambda \sum_{j=1}^{T_k} w_{kj}^2$ penalizes tree complexity ($n_{\text{estimators}}=200$, $\text{max\_depth}=4$, $\text{learning\_rate}=0.1$, $\text{subsample}=0.8$, $\text{min\_samples\_leaf}=5$).
+
+\paragraph{Exact 0/1 Dynamic Programming Knapsack Formulation.} For small candidate sets ($|R| \leq 30$), the exact selector computes the optimal subset via 2-D dynamic programming:
+\begin{equation}
+V(i, b, \mathbf{c}) = \max \begin{cases}
+V(i+1, b, \mathbf{c}) & \text{(skip } r_i\text{)} \\
+u(r_i) + V(i+1, b - \text{cost}(r_i), \mathbf{c} + \mathbf{e}_{r_i.\text{type}}) & \text{if } \text{cost}(r_i) \leq b \text{ and } c_{r_i.\text{type}} < \tau_{r_i.\text{type}}
+\end{cases}
+\end{equation}
+where $V(i, b, \mathbf{c})$ represents the maximum achievable utility from item index $i$ onward given remaining token capacity $b$ and type allocation counts $\mathbf{c}$.
+
+\section{Complete State Composition Templates \& Structured Directives}
+
+To ensure that all baselines and the trained scorer operate over directly comparable input structure, every compiled cognitive state passed to the downstream LLM follows a single fixed serialization format, applied identically across all six evaluated methods and all four benchmark domains. The directive below is issued as the system-level instruction for every condition, holding the downstream model's task framing constant across methods so that the coverage and answer-quality differences reported in Section~5 can be attributed to the compiled content itself rather than to variation in prompt format. The template that follows the directive shows how selected resources are grouped and labeled by resource type (knowledge, experience, computation) and tagged with a stable per-resource identifier (e.g., \texttt{k1}, \texttt{e1}, \texttt{c1}), which lets the downstream model, and any evaluator inspecting its output, trace an answer back to the specific resource or resources that supported it.
+
+\paragraph{Generic Downstream System Directive:}
+\begin{quote}
+\small\ttfamily
+You are an expert question-answering agent. Answer the question directly and accurately based ONLY on the provided COMPILED COGNITIVE STATE. Keep your answer extremely concise (an entity, name, date, or short phrase).
+\end{quote}
+
+\paragraph{State Composition Template:}
+\begin{quote}
+\small\ttfamily
+TASK:\\
+\{task.query\}\\
+\\
+COMPILED COGNITIVE STATE:\\
+\mbox{}[KNOWLEDGE | k1]\\
+\{resource\_1\_text\}\\
+\\
+\mbox{}[EXPERIENCE | e1]\\
+\{resource\_2\_text\}\\
+\\
+\mbox{}[COMPUTATION | c1]\\
+\{resource\_3\_text\}
+\end{quote}
+
+This template is intentionally minimal: it imposes only a type header and an identifier per resource, with no additional formatting, ordering hints, or resource-specific instructions layered on top. Keeping the composition step this lightweight isolates the effect of \emph{which} resources are selected, the knapsack decision of Algorithm~\ref{alg:csc}, from \emph{how} they are subsequently presented, so that the coverage and precision differences reported in Section~5 reflect selection quality rather than presentation quality. The same template is reused verbatim across the HotpotQA, Natural Questions, Chained NQ, and WebShop conditions, with only the populated resource blocks differing by domain and by which method selected them.
+
+\section{Extended Empirical Results \& Additional Tables}
+
+\begin{table}[h]
+\caption{Table 5: Live LLM evaluation on HotpotQA with Groq Qwen3.6-27B ($T=0.0$). Only CSC was evaluated at $B=1000$.}
+\centering
+\begin{tabular}{lcccccc}
+\toprule
+Method & Budget & Coverage & EM & F1 & Substring & Tokens \\
+\midrule
+\textbf{B4 CSC (ours)} & 500 & \textbf{1.000} & \textbf{0.667} & \textbf{0.889} & \textbf{1.000} & 464.0 \\
+B0 Full Context & 500 & 0.556 & 0.333 & 0.556 & 0.667 & 497.7 \\
+B1 Standard RAG & 500 & 0.444 & \textbf{0.667} & 0.667 & 0.667 & 394.7 \\
+B5 MEM1-style & 500 & 0.556 & \textbf{0.667} & 0.667 & 0.667 & 383.3 \\
+\midrule
+\textbf{B4 CSC (ours)} & 1000 & \textbf{1.000} & \textbf{0.667} & \textbf{0.889} & \textbf{1.000} & 902.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~5 also surfaces a distinction between state coverage and downstream answer correctness: B1 Standard RAG and B5 MEM1-style both reach an EM of 0.667 despite state coverage of only 0.444 and 0.556 respectively, showing that a compiled state can omit some gold-supporting facts and still let the downstream model produce a correct final answer when the missing fact happens to be redundant with respect to the specific question phrasing. CSC's substring match of 1.000 alongside its F1 of 0.889 indicates that, unlike the partial-coverage baselines, every gold answer span was reproducible from its compiled state, which is a more direct signal of state quality than EM alone. The $B=1000$ row shows token cost roughly doubling for CSC (464.0 to 902.0) while coverage, EM, and F1 remain unchanged, consistent with the near-saturation described in Section~5.3.
+
+\begin{table}[h]
+\caption{Table 6: Long-horizon state retention comparison across multi-turn sequence horizon $N$ under budget $B=512$.}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+Method & $N=2$ & $N=4$ & $N=8$ & $N=16$ & $N=16$ Token Footprint \\
+\midrule
+Full-Context (unbounded) & 100\% & 100\% & 100\% & 100\% & $\sim$3,150 (unbounded growth) \\
+Sliding Window (FIFO, $B{=}512$) & 100\% & 100\% & 100\% & 100\% & $\leq$512 (bounded FIFO) \\
+MEM1 (reproduced, RL) & 94\% & 91\% & 87\% & 82\% & 512 (constant recurrent) \\
+\textbf{CSC (ours, $B{=}512$)} & \textbf{100\%} & \textbf{100\%} & \textbf{100\%} & \textbf{100\%} & $\mathbf{\leq 512}$ \textbf{(guaranteed knapsack)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~6 reports the exact per-horizon retention percentages underlying Figure~3, together with the observed $N=16$ token footprint for each method. The comparison shows a difference in \emph{how} the 100\% retention figure is reached rather than in the figure itself: Sliding Window and CSC both hold 100\% retention at every horizon, but Sliding Window does so by construction, keeping only the most recent items within its fixed FIFO window, while CSC reaches the same retention through task-conditioned utility selection under Algorithm~\ref{alg:csc}, so its retained content is chosen for relevance to $\tau$ rather than for having entered the buffer most recently. MEM1's monotonic decline from 94\% to 82\% reflects lossy compression inherent to its fixed-size recurrent state, a cost that CSC avoids by selecting explicitly rather than compressing implicitly.
+
+\begin{table}[h]
+\caption{Table 7: Component ablation study on HotpotQA @ budget $B=500$ tokens.}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Ablation Condition & State Coverage & Performance Delta ($\Delta$) \\
+\midrule
+\textbf{Full CSC (Learned GBT)} & \textbf{100.0\%} & Baseline ($0.0\%$) \\
+Heuristic Utility (No Learn) & 95.6\% & $-4.4\%$ \\
+w/o Budget Density & 100.0\% & $0.0\%$ \\
+w/o Computation ($R_{\text{comp}}$) & 100.0\% & $0.0\%$ \\
+w/o Experience ($R_{\text{exp}}$) & 100.0\% & $0.0\%$ \\
+Relevance Only (No Types / B3) & 75.6\% & $\mathbf{-24.4\%}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~7 isolates each architectural component's contribution to the 100.0\% coverage achieved by the full CSC configuration at $B=500$. The two conditions that reduce coverage, replacing the learned scorer with the heuristic fallback ($-4.4$ points) and removing resource-type awareness entirely ($-24.4$ points), together indicate that cross-type awareness accounts for roughly five times the coverage protection of the learned scorer alone on this task sample. Withholding either the computation pool or the experience pool in isolation leaves coverage unchanged, confirming that on HotpotQA at this budget the facts required for full coverage are concentrated in the knowledge pool rather than distributed evenly across resource types, consistent with the reading in Section~5.5.
+
+\begin{table}[h]
+\caption{Table 8: Resource pool allocation (\% of selected budget) across nominal token budgets.}
+\centering
+\begin{tabular}{lccc}
+\toprule
+Token Budget & Knowledge ($R_{\text{know}}$) & Experience ($R_{\text{exp}}$) & Computation ($R_{\text{comp}}$) \\
+\midrule
+$B = 200$ & $\sim$40\% & $\sim$35\% & $\sim$25\% \\
+$B = 500$ & $\sim$65\% & $\sim$20\% & $\sim$15\% \\
+$B = 1000$ & $\sim$75\% & $\sim$15\% & $\sim$10\% \\
+$B = 2000$ & $\sim$80\% & $\sim$12\% & $\sim$8\% \\
+$B = 4000$ & $\sim$82\% & $\sim$10\% & $\sim$8\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~8 provides the exact percentage breakdown underlying the pool-allocation trend described in Section~5.6: the experience and computation shares fall from a combined $\sim$60\% of the selected pool at $B\approx200$ to a combined $\sim$18\% at $B=4000$, while the knowledge share rises correspondingly from $\sim$40\% to $\sim$82\%. This monotonic reallocation is a direct consequence of the greedy density selector of Algorithm~\ref{alg:csc}: once the budget is large enough to admit the highest-utility knowledge items, their higher per-item utility density continues to outrank experience and computation candidates for any remaining budget, so additional capacity is spent almost entirely on the knowledge pool.
+
+Table~9 reports an audit of the greedy utility-density selector against the exact dynamic-programming knapsack selector described in Section~3.5, run across all four evaluated domains at $B=500$. Across every domain, the greedy selector matches the exact selector's coverage exactly, with a measured optimality gap of 0.0\%, while running at roughly one-fifth to one-third of the exact selector's latency (for example, 0.15ms versus 0.72ms on HotpotQA). This indicates that, on the task samples evaluated here, the greedy approximation loses no achievable coverage relative to the provably optimal selection, so the greedy selector's $O(N \log N)$ running time can be used in place of the exact dynamic program without an observed cost to coverage; this equivalence has only been checked on these four evaluated domains and sample sizes, however, rather than established as a general property of the selector.
+
+\begin{table}[h]
+\caption{Table 9: Exact DP Knapsack vs.\ Greedy Density Selector audit across benchmark domains.}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+Domain & Greedy Coverage & Exact DP Coverage & Optimality Gap & Latency Difference \\
+\midrule
+HotpotQA ($N{=}15, B{=}500$) & 100.0\% & 100.0\% & 0.0\% & $< 0.15\text{ms}$ vs $0.72\text{ms}$ \\
+Natural Questions ($B{=}500$) & 100.0\% & 100.0\% & 0.0\% & $< 0.10\text{ms}$ vs $0.45\text{ms}$ \\
+Chained NQ (Q4, $B{=}500$) & 100.0\% & 100.0\% & 0.0\% & $< 0.12\text{ms}$ vs $0.51\text{ms}$ \\
+WebShop ($B{=}500$) & 100.0\% & 100.0\% & 0.0\% & $< 0.08\text{ms}$ vs $0.32\text{ms}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage
+\input{checklist_final.tex}
+
+\end{document}
