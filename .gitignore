@@ -5,3 +5,21 @@ __pycache__/
 results/*.csv
 .idea/
 .vscode/
+
+# Keep only the code release at the root; paper drafts, PDFs, archives,
+# root-level result CSVs and working notes stay local.
+/*
+!/.gitignore
+!/.env.example
+!/LICENSE
+!/readme.md
+!/requirements.txt
+!/PROJECT_CHANGELOG.md
+!/RESEARCH_PROTOCOL.md
+!/configs/
+!/csc/
+!/data/
+!/models/
+!/results/
+!/scripts/
+!/tests/
