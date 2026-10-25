@@ -184,7 +184,7 @@ All methods share the same candidate pools, tasks and token budgets. See [RESEAR
 ```bibtex
 @inproceedings{singh2026csc,
   title     = {Cognitive State Compilation: Resource-Bounded Construction of Reasoning States for Long-Horizon {LLM} Agents},
-  author    = {Singh, Vansh Kumar and Jain, Keshav and Shah, Rishi Ashish and Dhondiyal, Shivaay},
+  author    = {Vansh Kumar Singh and Keshav Jain and Rishi Ashish Shah and Shivaay Dhondiyal},
   booktitle = {Workshop on Resource-Aware Agentic AI, NeurIPS},
   year      = {2026}
 }
