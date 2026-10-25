@@ -1,132 +1,195 @@
 # Cognitive State Compilation (CSC)
 
-Resource-Bounded Construction of Reasoning States for Long-Horizon LLM Agents.
+**Resource-Bounded Construction of Reasoning States for Long-Horizon LLM Agents**
 
-This repository implements a minimal research prototype of:
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Venue](https://img.shields.io/badge/NeurIPS%202026-Resource--Aware%20Agentic%20AI%20Workshop-purple.svg)](#citation)
 
-Task -> Task Encoder -> Candidate Resource Pool -> Utility Scorer
--> Budgeted Selector -> State Composer -> Compiled Cognitive State -> LLM
+Official code release for the paper *Cognitive State Compilation: Resource-Bounded Construction of Reasoning States for Long-Horizon LLM Agents* (Workshop on Resource-Aware Agentic AI, NeurIPS 2026).
 
-Resource types:
-- knowledge
-- experience
-- computation
+Vansh Kumar Singh\*, Keshav Jain\*, Rishi Ashish Shah, Shivaay Dhondiyal &nbsp;&nbsp;(\*equal contribution)
 
-## Install
+---
+
+## Overview
+
+Long-horizon LLM agents draw on three kinds of resources: **retrieved knowledge**, **past experience**, and **intermediate computation** (tool outputs, scratchpads, cached results). Existing systems usually decide what to store, retrieve, or discard one component at a time. CSC instead treats the reasoning state handed to the model at each step as something to be *compiled* under a strict token budget.
+
+Given a task $\tau$, a heterogeneous candidate pool $R = R_{\text{know}} \cup R_{\text{exp}} \cup R_{\text{comp}}$, and a budget $B$, CSC solves a 0/1 knapsack:
+
+$$
+\max_{S \subseteq R} \sum_{r \in S} u(r \mid \tau) \quad \text{s.t.} \quad \sum_{r \in S} \text{cost}(r) \le B
+$$
+
+- **Utility $u(r \mid \tau)$** comes from a Gradient Boosted Tree classifier over a 9-dimensional feature vector (TF-IDF unigram and bigram similarity, keyword overlap, resource-type indicators, utility hint, normalized cost, utility density). A hand-specified dense scorer is used as a fallback when no trained model is available.
+- **Cost** is the exact token count under `cl100k_base` (`tiktoken`).
+- **Selection** is greedy by utility density, $u(r \mid \tau)/\text{cost}(r)$, with an exact dynamic-programming selector available for small pools.
+
+```mermaid
+flowchart LR
+    T[Task τ] --> P[Candidate Resource Pool<br/>knowledge · experience · computation]
+    P --> U[Utility Scorer<br/>GBT, 9 features]
+    U --> K[Budgeted Knapsack Selector<br/>greedy density / exact DP]
+    K --> C[State Composer]
+    C --> S[Compiled Cognitive State]
+    S --> L[LLM]
+```
+
+## Key Results
+
+All numbers are from the paper (15-task samples unless noted).
+
+| Setting | CSC (ours) | Strongest baseline |
+| :--- | :---: | :---: |
+| HotpotQA state coverage @ B = 500 | **100.0%** | 83.3% (Standard RAG) |
+| HotpotQA live-LLM F1 @ B = 500 (Qwen3.6-27B, T = 0) | **88.9%** | 66.7% |
+| Long-horizon state retention, N = 16 turns, B = 512 | **100%** | 82% (reproduced MEM1) |
+| GBT scorer, 5-fold CV | 98.6% accuracy / 94.2% F1 | — |
+
+<details>
+<summary><b>Full HotpotQA comparison @ B = 500</b></summary>
+
+| Method | Coverage | Precision | Tokens Used |
+| :--- | :---: | :---: | :---: |
+| **B4 CSC (ours)** | **1.000** | 0.191 | 459.6 |
+| B1 Standard RAG | 0.833 | **0.347** | 388.0 |
+| B2 Memory RAG | 0.833 | 0.220 | 469.3 |
+| B3 Relevance-Only | 0.833 | 0.164 | 486.0 |
+| B0 Full Context | 0.600 | 0.179 | 496.9 |
+| B5 MEM1-style | 0.600 | 0.152 | 346.8 |
+
+</details>
+
+<details>
+<summary><b>Component ablation on HotpotQA @ B = 500</b></summary>
+
+| Ablation | State Coverage | Δ |
+| :--- | :---: | :---: |
+| **Full CSC (learned GBT)** | **100.0%** | — |
+| Heuristic utility (no learning) | 95.6% | −4.4 |
+| w/o budget density | 100.0% | 0.0 |
+| w/o computation pool | 100.0% | 0.0 |
+| w/o experience pool | 100.0% | 0.0 |
+| Relevance only (no types) | 75.6% | −24.4 |
+
+</details>
+
+<p align="center">
+  <img src="results/figures/fig1_performance_vs_budget.png" width="48%" alt="State coverage vs. token budget"/>
+  <img src="results/mem1_vs_csc_comparison.png" width="48%" alt="CSC vs. MEM1 long-horizon comparison"/>
+</p>
+
+## Repository Structure
+
+```
+CognitiveOS/
+├── csc/                         # Core library
+│   ├── types.py                 # Task, Resource and CompiledState types
+│   ├── tokenizer.py             # tiktoken (cl100k_base) cost model
+│   ├── scorers.py               # Dense heuristic fallback scorer
+│   ├── learned_scorer.py        # 9-feature GBT utility scorer
+│   ├── selector.py              # Greedy density and exact DP knapsack selectors
+│   ├── composer.py              # Compiled-state serialization template
+│   ├── compiler.py              # CognitiveStateCompiler (scorer → selector → composer)
+│   ├── baselines.py             # B0–B3, B5 comparison methods
+│   ├── dataset.py               # Benchmark loaders
+│   ├── evaluation.py            # Coverage, precision and cost metrics
+│   └── llm.py                   # OpenAI-compatible client with retries
+├── scripts/                     # Experiment runners, data preparation and plotting
+├── data/                        # Prepared HotpotQA, NQ, Chained NQ and WebShop benchmarks
+├── configs/default.yaml         # Budgets, resource types and metrics
+├── results/                     # Figures and LaTeX tables used in the paper
+├── models/                      # Trained scorer is written here (not committed)
+└── tests/                       # Unit tests
+```
+
+## Installation
 
 ```bash
+git clone https://github.com/Vansh-456/CognitiveOS.git
+cd CognitiveOS
+
 python -m venv .venv
-# Windows: .venv\\Scripts\\activate
+# Windows: .venv\Scripts\activate
 # Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Offline demo
+Everything except the live LLM evaluation runs offline on CPU with no API key.
+
+## Quick Start
 
 ```bash
-python scripts/run_demo.py
+python scripts/train_scorer.py                        # train the GBT scorer (fixed seed)
+python scripts/run_demo.py --benchmark hotpotqa       # compare CSC against all baselines
+pytest -q                                             # run the test suite
 ```
 
-The demo uses TF-IDF and a deterministic state evaluator, so no API key is
-required. It is an architecture smoke test, NOT a publication-quality LLM
-benchmark.
+## Reproducing the Paper
 
-Results are written to `results/demo_results.csv` and
-`results/demo_summary.csv`.
+Run all commands from the repository root. Train the scorer first; it is not distributed as a binary but is retrained deterministically (`random_state=42` for both the classifier and the 5-fold split).
 
-## Tests
+| Paper result | Command | Output |
+| :--- | :--- | :--- |
+| GBT scorer, 5-fold CV | `python scripts/train_scorer.py` | `models/learned_scorer.joblib` |
+| Budget sweep and cross-domain coverage | `python scripts/run_demo.py --benchmark all --limit 15` | `results/multidomain_*.csv`, `results/demo_*.csv` |
+| Component ablation | `python scripts/run_ablations.py --limit 15` | `results/ablation_*.csv` |
+| Live LLM evaluation | `python scripts/run_llm_eval.py --benchmark hotpotqa --limit 15` | `results/llm_eval_*.csv` |
+| Long-horizon comparison against MEM1 | `python scripts/compare_with_mem1_literature.py` | `results/mem1_vs_csc_literature_comparison.csv` |
+| Figures 1–5 | `python scripts/plot_results.py` | `results/figures/` |
+| CSC vs. MEM1 figure | `python scripts/plot_mem1_comparison.py` | `results/mem1_vs_csc_comparison.png` |
+| LaTeX tables | `python scripts/export_paper_tables.py` | `results/tables/` |
+
+`run_demo.py` accepts `--benchmark` set to `hotpotqa`, `nq`, `nq_chained`, `webshop`, or `all`.
+
+### Live LLM evaluation
+
+The live evaluation uses any OpenAI-compatible endpoint. Copy `.env.example` to `.env` and fill in:
 
 ```bash
-pytest -q
+LLM_API_KEY=your_api_key_here
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=your_model_id
 ```
 
-## Real LLM mode
-
-Set:
-- `LLM_API_KEY`
-- `LLM_BASE_URL`
-- `LLM_MODEL`
-
-The provided OpenAI-compatible adapter can then be connected to the experiment
-runner.
-
-## Important research note
-
-The included B5 baseline is a controlled approximation of MEM1-style recurrent
-compact-state consolidation. It is NOT a reproduction of MEM1's original RL
-training procedure. For the final paper, label it accordingly unless you
-implement the original method faithfully.
-
-## Research Platform Features
-
-1. **Learned Utility Scorer (`TrainedUtilityScorer`)**:
-   - Gradient Boosted Tree classifier trained on 9-dimensional multi-modal features (TF-IDF, keyword overlap, typed priors, utility hints, cost density).
-   - Achieves **98.6% accuracy / 94.2% F1** on 5-fold cross-validation.
-   - Vectorized batch feature extraction for sub-millisecond inference.
-
-2. **Multi-Domain Benchmarks**:
-   - **HotpotQA**: Multi-hop reasoning with distractors and computational entity traces.
-   - **Natural Questions (NQ)**: Open-domain search QA with query-expansion experience traces.
-   - **Chained NQ (Q4)**: Multi-turn dialog episodes with cross-turn state dependencies.
-   - **WebShop**: E-commerce / tool-use candidate trajectories.
-
-3. **Publication-Ready Figures & Baselines**:
-   - Compares **CSC (Ours)** against **B0: Full Context**, **B1: Standard RAG**, **B2: Memory RAG**, **B3: Relevance Only**, and **B5: MEM1 Recurrent Style**.
-   - Generates Figures 1–5 in `results/figures/` covering accuracy vs. budget, token efficiency frontiers, ablations, cross-domain generalization, and heterogeneous pool allocations.
-
----
-
-## Quick Start & Reproduction
-
-### 1. Train the Learned Scorer
-```bash
-python scripts/train_scorer.py
-```
-
-### 2. Run Multi-Domain Benchmark Sweeps
-```bash
-python scripts/run_demo.py --benchmark all --limit 15
-```
-
-### 3. Run Ablation Study
-```bash
-python scripts/run_ablations.py --limit 15
-```
-
-### 4. Run MEM1 Long-Horizon Literature Comparison
-```bash
-python scripts/compare_with_mem1_literature.py
-```
-
-### 5. Generate All Publication Figures
-```bash
-python scripts/plot_results.py
-python scripts/plot_mem1_comparison.py
-```
-
-### 6. Run Unit Tests
-```bash
-pytest -q
-```
-
----
-
-## Downstream LLM Evaluation
-
-To evaluate downstream answer accuracy (Exact Match / F1) with live or mock LLMs:
+The paper uses Qwen3.6-27B on Groq with greedy decoding (T = 0). Values can also be passed as flags (`--api_key`, `--base_url`, `--model`), and `--mock` runs the full pipeline offline without API calls:
 
 ```bash
-# Offline dry-run:
 python scripts/run_llm_eval.py --benchmark hotpotqa --limit 15 --mock
-
-# Live LLM (OpenAI / vLLM / LiteLLM compatible):
-python scripts/run_llm_eval.py --benchmark hotpotqa --limit 15 --api_key $LLM_API_KEY --model gpt-4o-mini
 ```
 
----
+## Baselines
 
-## Key Results Summary
+| ID | Method | Description |
+| :--- | :--- | :--- |
+| B0 | Full Context | Appends resources chronologically until the budget is exhausted |
+| B1 | Standard RAG | Top-k similarity retrieval over the knowledge pool |
+| B2 | Memory RAG | Retrieval over knowledge plus experience memory |
+| B3 | Relevance Only | Flat TF-IDF ranking across all pools, no type priors |
+| **B4** | **CSC (ours)** | Learned utility + budgeted knapsack over all three pools |
+| B5 | MEM1-style | Recurrent compact-state consolidation approximation |
 
-- **100.0% State Coverage** achieved at a constrained budget of **500 tokens** on multi-hop reasoning (vs. 53.3% for Full Context / MEM1 Style).
-- **88.9% State Coverage** retained even under extreme budget constraints (**200 tokens**).
-- **Zero Token Memory Growth** across 16-turn chained horizons compared to unbounded linear context growth in standard full-context systems.
+All methods share the same candidate pools, tasks and token budgets. See [RESEARCH_PROTOCOL.md](RESEARCH_PROTOCOL.md) for the fairness rules.
+
+## Limitations
+
+- **B5 is an approximation.** The MEM1-style baseline approximates recurrent compact-state consolidation at inference time. It is not a reproduction of MEM1's reinforcement-learning training procedure.
+- **In-distribution scorer accuracy.** The GBT scorer is trained and evaluated on the same coverage signal, so the reported CV accuracy reflects in-distribution performance rather than held-out generalization.
+- **Small samples.** Results use 15-task samples, and WebShop covers only five curated tasks. On NQ, Chained NQ and WebShop, all methods reach full coverage at B = 500; CSC's coverage advantage is specific to the distractor-heavy HotpotQA setting.
+- **Recency vs. selection.** In the long-horizon benchmark, a sliding-window FIFO baseline also reaches 100% retention, so it does not yet isolate task-conditioned selection from recency.
+
+## Citation
+
+```bibtex
+@inproceedings{singh2026csc,
+  title     = {Cognitive State Compilation: Resource-Bounded Construction of Reasoning States for Long-Horizon {LLM} Agents},
+  author    = {Singh, Vansh Kumar and Jain, Keshav and Shah, Rishi Ashish and Dhondiyal, Shivaay},
+  booktitle = {Workshop on Resource-Aware Agentic AI, NeurIPS},
+  year      = {2026}
+}
+```
+
+## License
+
+Released under the [MIT License](LICENSE).
